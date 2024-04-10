@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>crispat package &mdash; crispat  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Documentation for crispat" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            crispat
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">crispat package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.combine_assignments"><code class="docutils literal notranslate"><span class="pre">combine_assignments()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.create_anndata_from_cellranger"><code class="docutils literal notranslate"><span class="pre">create_anndata_from_cellranger()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.create_anndata_from_csv"><code class="docutils literal notranslate"><span class="pre">create_anndata_from_csv()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_2beta"><code class="docutils literal notranslate"><span class="pre">ga_2beta()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_3beta"><code class="docutils literal notranslate"><span class="pre">ga_3beta()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_SCEPTRE"><code class="docutils literal notranslate"><span class="pre">ga_SCEPTRE()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_UMI"><code class="docutils literal notranslate"><span class="pre">ga_UMI()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_binomial"><code class="docutils literal notranslate"><span class="pre">ga_binomial()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_cellranger"><code class="docutils literal notranslate"><span class="pre">ga_cellranger()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_max"><code class="docutils literal notranslate"><span class="pre">ga_max()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_negative_binomial"><code class="docutils literal notranslate"><span class="pre">ga_negative_binomial()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_quantiles"><code class="docutils literal notranslate"><span class="pre">ga_quantiles()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_ratio"><code class="docutils literal notranslate"><span class="pre">ga_ratio()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_replogle"><code class="docutils literal notranslate"><span class="pre">ga_replogle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.load_assignments"><code class="docutils literal notranslate"><span class="pre">load_assignments()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.plot_intersection_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_intersection_heatmap()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">crispat</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">crispat package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/crispat.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-crispat">
+<span id="crispat-package"></span><h1>crispat package<a class="headerlink" href="#module-crispat" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.combine_assignments">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">combine_assignments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNAs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_gRNAs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.combine_assignments" title="Link to this definition"></a></dt>
+<dd><p>Combines assignment files for methods that have been performed on gRNA subsets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_dir</strong> (<em>str</em>) – directory containing the assignment output</p></li>
+<li><p><strong>start_gRNAs</strong> (<em>list</em>) – list of gRNA start indices</p></li>
+<li><p><strong>end_gRNAs</strong> (<em>list</em>) – list of gRNA end indices</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.create_anndata_from_cellranger">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">create_anndata_from_cellranger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.create_anndata_from_cellranger" title="Link to this definition"></a></dt>
+<dd><p>Creates an AnnData object from cellranger output (one folder per batch named batch1, batch2,…)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_list</strong> (<em>list</em>) – list of batch numbers</p></li>
+<li><p><strong>input_dir</strong> (<em>list</em>) – directory containing the cellranger output of each batch</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em>) – directory in which to save the AnnData object that is used as input for guide assignment</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.create_anndata_from_csv">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">create_anndata_from_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.create_anndata_from_csv" title="Link to this definition"></a></dt>
+<dd><p>Creates an AnnData object from a csv file (rows: gRNAs, columns: cells; name of first column: gRNA)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csv_file</strong> (<em>str</em>) – path of the csv file</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em>) – directory in which to save the AnnData object that is used as input for guide assignment</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_2beta">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_2beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_2beta" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment in which a mixture model of 2-Beta distributions is fitted to the ratios of
+the most abundant gRNAs per cell to determine a batch-specific threshold on the ratios</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – Path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>batch_list</strong> (<em>list</em>) – List of batches for which to fit the mixture model</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – Directory in which to store the resulting assignment</p></li>
+<li><p><strong>n_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of steps for training the model (default is 500)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_3beta">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_3beta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_3beta" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment in which a mixture model of 3 Beta distributions is fitted to the ratios of
+the most abundant gRNAs to determine a batch-specific threshold on the ratios</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>batch_list</strong> (<em>list</em>) – list of batches for which to fit the mixture model</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
+<li><p><strong>n_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – number of steps for training the model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_SCEPTRE">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_SCEPTRE</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gRNA_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_SCEPTRE" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment with a Poisson mixture model based on SCEPTRE approach</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>batch_list</strong> (<em>list</em>) – list of batches for which to fit the mixture model</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
+<li><p><strong>start_gRNA</strong> (<em>int</em><em>, </em><em>optional</em>) – index of the start gRNA when parallelizing assignment for gRNA sets</p></li>
+<li><p><strong>gRNA_step</strong> (<em>int</em><em>, </em><em>optional</em>) – number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)</p></li>
+<li><p><strong>n_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – number of steps for training the model</p></li>
+<li><p><strong>subsample_size</strong> (<em>int</em><em>, </em><em>optional</em>) – number of cells to use for each step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_UMI">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_UMI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresholds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_UMI" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment with fixed UMI thresholds</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>thresholds</strong> (<em>list</em>) – list of integers to use as thresholds (create assignment output file for each t in the list)</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_binomial">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_binomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gRNA_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_binomial" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment in which a binomial mixture model is fitted to the gRNA counts</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>batch_list</strong> (<em>list</em>) – list of batches for which to fit the mixture model</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
+<li><p><strong>start_gRNA</strong> (<em>int</em>) – index of the start gRNA when parallelizing assignment for gRNA sets</p></li>
+<li><p><strong>gRNA_step</strong> (<em>int</em>) – number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)</p></li>
+<li><p><strong>n_iter</strong> (<em>int</em>) – number of steps for training the model</p></li>
+<li><p><strong>subsample_size</strong> (<em>int</em>) – number of cells to use for each step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_cellranger">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_cellranger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_cellranger" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> – (str) path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>batch_list</strong> – (list) list of batches for which to fit the mixture model</p></li>
+<li><p><strong>output_dir</strong> – (str) directory in which to store the resulting assignment</p></li>
+<li><p><strong>start_gRNA</strong> – (int, optional) index of the start gRNA when parallelizing assignment for gRNA sets</p></li>
+<li><p><strong>step</strong> – (int, optional) number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_max">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_max" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment in which the most abundant gRNA per cell is assigned
+:param input_file: path to the stored anndata object with the gRNA counts
+:type input_file: str
+:param output_dir: directory in which to store the resulting assignment
+:type output_dir: str</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_negative_binomial">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_negative_binomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gRNA_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_negative_binomial" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment with a negative binomial mixture model based on SCEPTRE mixture approach
+(Negative Binomial instead of Poisson as in SCEPTRE)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>batch_list</strong> (<em>list</em>) – list of batches for which to fit the mixture model</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
+<li><p><strong>start_gRNA</strong> (<em>int</em><em>, </em><em>optional</em>) – index of the start gRNA when parallelizing assignment for gRNA sets</p></li>
+<li><p><strong>gRNA_step</strong> (<em>int</em><em>, </em><em>optional</em>) – number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)</p></li>
+<li><p><strong>n_iter</strong> (<em>int</em>) – number of steps for training the model</p></li>
+<li><p><strong>subsample_size</strong> (<em>int</em>) – number of cells to use for each step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_quantiles">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_quantiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresholds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_quantiles" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment in which the X% non-zero cells with highest ratios are assigned per gRNA</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>thresholds</strong> (<em>list</em>) – list of quantile thresholds for which to return the assignment</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_ratio">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_ratio</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresholds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_ratio" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment in which the most abundant gRNA per cell is assigned if it comprises
+more than X% of the total counts in a cell</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> – (str) path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>thresholds</strong> – (list) list of ratio thresholds to use (generates one output file per ratio)</p></li>
+<li><p><strong>output_dir</strong> – (str) directory in which to store the resulting assignment</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_replogle">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_replogle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_replogle" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment in which a Poisson-Gaussian mixture model is fitted to the non-zero log-transformed UMI counts</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
+<li><p><strong>start_gRNA</strong> (<em>int</em><em>, </em><em>optional</em>) – index of the start gRNA when parallelizing assignment for gRNA sets</p></li>
+<li><p><strong>step</strong> (<em>int</em><em>, </em><em>optional</em>) – number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)</p></li>
+<li><p><strong>n_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – number of steps for training the model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.load_assignments">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">load_assignments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gc_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.load_assignments" title="Link to this definition"></a></dt>
+<dd><p>Loads and combines assignment files of specified methods</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_dir</strong> (<em>str</em>) – directory containing the assignment output</p></li>
+<li><p><strong>start_gRNAs</strong> (<em>list</em>) – list of gRNA start indices</p></li>
+<li><p><strong>end_gRNAs</strong> (<em>list</em>) – list of gRNA end indices</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A pd DataFrame containing the gRNA-cell assignments of each method</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.plot_intersection_heatmap">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">plot_intersection_heatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">perturbations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.plot_intersection_heatmap" title="Link to this definition"></a></dt>
+<dd><p>Plot a heatmap with intersection proportions and a barplot with the number of assignments per method</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>perturbations</strong> (<em>pd DataFrame</em>) – df with the assigned perturbations (needed columns: method, cell, gRNA)</p></li>
+<li><p><strong>colors</strong> (<em>dictionary</em>) – specifies the colors to use for each method in the barplot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A matplotlib plot consisting of two subfigures (intersection heatmap and number of assignments barplot)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Documentation for crispat" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Jana M. Braunger.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
