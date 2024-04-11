@@ -1,0 +1,8 @@
+step,time
+create SCEPTRE,80.7670724391937
+set analysis parameters,0.139388561248779
+read in guide assignment,0.167770862579346
+quality control,0.0311751365661621
+calibration check,8.74970054626465
+power check,6.10429334640503
+discovery analysis,440.008692502975

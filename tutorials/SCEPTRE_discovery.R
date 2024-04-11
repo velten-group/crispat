@@ -2,7 +2,7 @@ library(tidyverse)
 library(sceptre)
 library(Seurat)
 library(Matrix)
-source('utils_SCEPTRE.R')
+source('SCEPTRE_utils.R')
 
 # Get command line arguments
 args <- commandArgs(trailingOnly = TRUE)
@@ -30,18 +30,18 @@ gRNA_target_df <- read_csv(annotation_file, show_col_types = FALSE) %>%
   rename(grna_id = gRNA, grna_target = target_gene) 
 
 # Read in guide assignment results
-PGMM <- read_csv(gc_file, show_col_types = FALSE) 
+assignment <- read_csv(gc_file, show_col_types = FALSE) 
 
 ## subset to cells with single perturbations
-single_perturbations <- PGMM %>% subset(select = c(cell, gRNA)) %>%
+single_perturbations <- assignment %>% subset(select = c(cell, gRNA)) %>%
   distinct() %>%
   group_by(cell) %>%
   mutate(n = n()) %>%
   filter(n == 1)
-PGMM <- PGMM %>%
+assignment <- assignment %>%
   filter(cell %in% single_perturbations$cell, gRNA %in% gRNA_target_df$grna_id)
 
-assigned_cells <- unique(PGMM$cell)
+assigned_cells <- unique(assignment$cell)
 
 # Create sceptre object for assigned cells
 out <- create_sceptre(gRNA_target_df, assigned_cells, batches, "low", data_dir, data_name)
@@ -95,34 +95,34 @@ print(round(t2 - t1,2))
 # Add guide assignment
 print('Add own guide assignment to SCEPTRE')
 ## add cell indices
-PGMM <- PGMM %>%
+assignment <- assignment %>%
   inner_join(cell_indices) %>%
   mutate(cell_index = as.integer(cell_index))
 
 # convert it to a list
-PGMM_list <- split(PGMM$cell_index, PGMM$gRNA)
+assignment_list <- split(assignment$cell_index, assignment$gRNA)
 # add gRNAs without any assigned cells
-null_grnas <- filter(gRNA_target_df, ! grna_id %in% PGMM$gRNA)$grna_id
-PGMM_list <- c(PGMM_list, 
+null_grnas <- filter(gRNA_target_df, ! grna_id %in% assignment$gRNA)$grna_id
+assignment_list <- c(assignment_list, 
                setNames(lapply(rep(list(integer(0)), length(null_grnas)), function(x) x), null_grnas))
 
 # get processed assignment outputs
-processed_assignment_out <- process_initial_assignment_list(initial_assignment_list = PGMM_list,
+processed_assignment_out <- process_initial_assignment_list(initial_assignment_list = assignment_list,
                                                             grna_target_data_frame = sceptre_object@grna_target_data_frame,
                                                             n_cells = ncol(sceptre_object@grna_matrix[[1]]), 
                                                             low_moi = sceptre_object@low_moi,
                                                             maximum_assignment = FALSE, 
-                                                            perturbation_df = PGMM)
+                                                            perturbation_df = assignment)
 
 # write guide assignment results to the sceptre object
 sceptre_object@grna_assignments_raw <- processed_assignment_out$grna_assignments_raw
 sceptre_object@grnas_per_cell <- as.integer(processed_assignment_out$grnas_per_cell)
 sceptre_object@cells_w_multiple_grnas <- processed_assignment_out$cells_w_multiple_grnas
-sceptre_object@initial_grna_assignment_list <- PGMM_list 
+sceptre_object@initial_grna_assignment_list <- assignment_list 
 sceptre_object@last_function_called <- "assign_grnas"
 sceptre_object@functs_called["assign_grnas"] <- TRUE
-sceptre_object@grna_assignment_method = "PGMM"
-sceptre_object@cells_in_use <- sort(unique(PGMM$cell_index))
+sceptre_object@grna_assignment_method = "own_assignment"
+sceptre_object@cells_in_use <- sort(unique(assignment$cell_index))
 t3 <- Sys.time()
 print(round(t3 - t2,2))
 
