@@ -215,7 +215,7 @@ def get_perturbed_cells(adata_crispr, estimates, gRNA):
     return perturbed_cells
 
 
-def ga_SCEPTRE(input_file, batch_list, output_dir, start_gRNA = 0, gRNA_step = None, n_iter = 2500, subsample_size = 15000):
+def ga_sceptre(input_file, batch_list, output_dir, start_gRNA = 0, gRNA_step = None, n_iter = 2500, subsample_size = 15000):
     '''
     Guide assignment with a Poisson mixture model based on SCEPTRE approach
     

@@ -7,7 +7,7 @@ import anndata as ad
 from scipy.sparse import csr_matrix
 
 
-def ga_UMI(input_file, thresholds, output_dir):   
+def ga_umi(input_file, thresholds, output_dir):   
     '''
     Guide assignment with fixed UMI thresholds 
     

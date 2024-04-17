@@ -1,0 +1,17 @@
+[project]
+name = "crispat"
+version = "0.0.9"
+authors = [
+  { name="Jana M. Braunger", email="jana.Braunger@cos.uni-heidelberg.de" },
+]
+description = "CRISPR guide Assignment Tool"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/"

@@ -1,0 +1,198 @@
+---
+title: "Effects of guide assignment for downstream analyses"
+output: BiocStyle::html_document
+date: "04/04/2024"
+author: "Jana M. Braunger"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+BiocStyle::html_document 
+
+data_dir = '../example_data/'
+```
+
+# Required libraries and data
+## Load needed libraries
+```{r load_libraries, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(GGally)
+library(UpSetR)
+library(pheatmap)
+
+source("downstream_utils.R")
+```
+
+## Load guide assignment results
+```{r}
+# data frame containing the cells with single assignments per method
+guide_assignment <- read_csv(paste0(data_dir, 'guide_assignments/', 
+                                    'single_assignments_all_methods.csv'), show_col_types = FALSE) 
+head(guide_assignment)
+
+# calculate number of assigned cells per method
+n_assigned_cells <- guide_assignment %>% 
+  group_by(method) %>%
+  summarize(n_cells = n()) 
+head(n_assigned_cells)
+```
+
+```{r}
+# define colors
+colors <- c('UMI_t7' = "#E6AB02", 'Maximum' = "#9ace25", 'ratio_50%' = "#00d360", 
+            '2-Beta' = "#20ba94", '3-Beta' = "#009500", 'Cellranger' = "#06cdff",
+            'Replogle' = "#06A4FF", 'SCEPTRE' = "#F8766D", 'Negative Binomial' = "#FF66A8", 
+            'Binomial' = "#FB61D7", 'top_35%_cells' = "#DF70F8")
+```
+
+
+## Load power check results for various guide assignment approaches
+
+```{r}
+# define all method directories and method names
+dir_names = c("2-BetaMM", "3-BetaMM", "gauss", "replogle", 
+              "SCEPTRE", "maximum", "binomial", "negative_binomial",
+              "quantiles/q0.35", "UMI_t/t8", "ratios/t0.8")
+method_names <- data.frame('method' = c("2-Beta", "3-Beta", "Cellranger", "Replogle", 
+                                        "SCEPTRE", "Maximum", "Binomial", "Negative Binomial",
+                                        "top_35%_cells", "UMI_t7", "ratio_50%"), 
+                           'dir_name' = dir_names)
+
+power_check <- lapply(dir_names, function(name) {get_power_check_results(data_dir, name, method_names)}) %>% 
+  bind_rows()%>%
+  mutate(method = factor(method, levels = names(colors), ordered = TRUE))
+head(power_check)
+```
+
+
+## Load calibration results for various guide calling approaches
+
+```{r}
+# get number of false discoveries for each method
+calibration <- lapply(dir_names, function(name) {get_calibration_results(data_dir, name, method_names)}) %>% 
+  bind_rows() %>%
+  group_by(method) %>%
+  mutate(total_tests = n()) %>%
+  filter(significant == TRUE) %>%
+  group_by(method, total_tests) %>%
+  summarize(false_discoveries = n()) %>%
+  mutate(method = factor(method, levels = names(colors), ordered = TRUE))
+```
+
+
+## Load discovery analysis results for various guide calling approaches
+
+```{r}
+# get discovery analysis results
+discovery_analysis <- lapply(dir_names, function(name) {get_discovery_analysis_results(data_dir, name, method_names)}) %>% 
+  bind_rows() %>%
+  mutate(method = factor(method, levels = names(colors), ordered = TRUE))
+head(discovery_analysis)
+```
+
+
+# Comparison of SCEPTRE output for various guide assignment methods 
+## Analysis of true positives (power check on target genes)
+```{r sig_downreg_targets, , fig.height=3.3, fig.width = 4.4}
+# Number of significantly downregulated target genes
+signif_targets <- power_check %>% filter(p_adj < 0.05) %>% 
+  group_by(method) %>% 
+  summarize(signif_targets = n()) %>%
+  left_join(n_assigned_cells)
+
+
+ggplot(signif_targets, aes(x = n_cells, y = signif_targets, group = method)) +
+  geom_point(aes(color = method), size = 2) + 
+  theme_bw() + 
+  labs(x = 'Number of assigned cells', y = 'Number of significant target genes')  +
+  scale_color_manual(name = 'Guide assignment', values = colors, 
+                     breaks = names(colors))
+```
+
+
+```{r lfc}
+# log2 fold changes of the target genes
+lfc <- power_check %>% 
+  subset(select = c(grna_id, log_2_fold_change, method)) %>% 
+  spread(key = method, value = log_2_fold_change) %>%
+  column_to_rownames(var = "grna_id")
+```
+
+
+```{r difference_heatmap_targets, fig.width=3.8, fig.height=3.3}
+# calculate pairwise differences
+calculate_diff <- function(lfc, method1, method2){
+  diff <- (lfc[[method1]] - lfc[[method2]]) / sqrt(2)
+  return(median(diff, na.rm = TRUE))
+}
+
+# create data frame with pairwise methods
+pairs = expand.grid(colnames(lfc), colnames(lfc))
+pairs$diff <- apply(pairs, 1, function(row) calculate_diff(lfc, row[1], row[2]))
+diff_matrix <- pairs %>% 
+  spread(key = Var2, value = diff) %>% 
+  column_to_rownames(var = "Var1")
+
+# plot heatmap
+color_breaks <- seq(-0.8, 0.8, length.out = 100)
+pheatmap(diff_matrix, display_numbers = F, 
+         cluster_rows = F, cluster_cols = F, scale = "none",
+         color = rev(colorRampPalette((RColorBrewer::brewer.pal(n = 7, name ="RdBu")))(100)),
+         breaks = color_breaks,
+         legend_title = "Median difference of log2 fold changes", 
+         gaps_row = c(1, 5, 7), gaps_col = c(1,5,7))
+```
+
+
+## Number of false discoveries
+```{r false_positives, fig.width=5, fig.height=4}
+# plot number of false discoveries
+ggplot(calibration, aes(y = reorder(method, -false_discoveries), x = false_discoveries)) +
+  geom_bar(stat = 'identity', fill = '#3776ab') + 
+  theme_bw() + 
+  labs(y = '', x = 'Number of false discoveries')
+```
+
+
+## Discovery analysis 
+
+```{r total_discoveries, , fig.height=3.3, fig.width = 4.4}
+# scatter plot with number of total discoveries vs number of assigned cells
+discoveries <- discovery_analysis %>% 
+  group_by(method) %>% 
+  summarize(total_discoveries = n()) %>% 
+  left_join(n_assigned_cells)
+
+ggplot(discoveries, aes(x = n_cells, y = total_discoveries, group = method)) +
+  geom_point(aes(color = method), size = 2) +
+  theme_bw() + 
+  labs(color = 'Guide calling method', x = 'Number of assigned cells', y = 'Number of total discoveries') +
+  scale_color_manual(name = 'Guide assignment', values = colors, 
+                     breaks = names(colors))
+```
+
+
+## Data set summary 
+```{r summary_heatmap, fig.width=3, fig.height=4}
+# create heatmap summarizing the results
+results <- power_check %>% 
+  group_by(method) %>% 
+  summarize(neg_lfc = - median(log_2_fold_change)) %>%
+  left_join(signif_targets %>% select(method, signif_targets)) %>%
+  left_join(discoveries %>% select(method, total_discoveries)) %>%
+  column_to_rownames(var = "method")
+results <- as.data.frame(scale(results))
+
+seq_breaks <- c(seq(min(results), 0, (0-min(results))/100 * 2), seq(0, max(results), (max(results)-0)/100 * 2)[-1])
+pheatmap(results, labels_col = c("-log2 fold change", "Significant targets",
+                                 "Total discoveries"),
+         cluster_rows=FALSE, cluster_cols = FALSE, breaks = seq_breaks, gaps_row = c(1, 5, 7),
+         color = rev(colorRampPalette((RColorBrewer::brewer.pal(n = 7, name ="RdBu")))(100)))
+```
+
+
+# Session info
+```{r}
+sessionInfo()
+```
+

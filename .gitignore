@@ -1,0 +1,13 @@
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+.eggs/
+*.pyc
+*.egg-info/
+.installed.cfg
+*.eg
+*.ipynb_checkpoints
+.DS_Store
+__pychache__
