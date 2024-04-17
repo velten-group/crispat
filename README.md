@@ -2,7 +2,7 @@
 
 Pooled single-cell CRISPR screens are a powerful tool for systematically gaining new insights into the functional consequences of genetic perturbations in high-throughput analyses. To allow for meaningful downstream analyses and biological insights about gene regulatory mechanisms from single-cell CRISPR screen experiments a first crucial step is guide assignment, where cells are assigned to specific guides and corresponding genetic targets. For this, thresholds on the measured gRNA counts per cell are used to distinguish between background contamination and the actual guide presence in a cell. However, lots of different guide assignment strategies and thresholds are used by different labs without any guidance on what model or threshold to choose when. 
 
-As demonstrated on *low MOI CRISPRi* screens in our preprint [Braunger et al, 2024](preprint link) the choice of guide assignment strategy strongly influences the results, highlighting the need to choose a suitable strategy for the data at hand for a reliable and powerful analysis of the data. To help with this choice the **crispat** package implements 11 different assignment methods and facilitates their comparison. 
+As demonstrated on *low MOI CRISPRi* screens in our preprint [Braunger et al, 2024](link to the preprint will be added soon) the choice of guide assignment strategy strongly influences the results, highlighting the need to choose a suitable strategy for the data at hand for a reliable and powerful analysis of the data. To help with this choice the **crispat** package implements 11 different assignment methods and facilitates their comparison. 
 
 ## Guide assignment methods
 Methods include simple approaches such as a threshold on the UMI counts or assigning the gRNA with highest counts per cell, as well as more advanced models taking into account the variability per cell, the variability per gRNA, or both. Methods are grouped into 4 main categories based on the information that is used during assignment:
@@ -11,7 +11,7 @@ Methods include simple approaches such as a threshold on the UMI counts or assig
 - across cells (`ga_cellranger`, `ga_replogle`)
 - across gRNAs and across cells (`ga_SCEPTRE`, `ga_negative_binomial`, `ga_binomial`, `ga_quantiles`)
 
-For details on the individual methods please refer to our our preprint [Braunger et al, 2024](preprint link).
+For details on the individual methods please refer to our our preprint [Braunger et al, 2024](link to the preprint will be added soon).
 
 ## Tools for method comparison 
 In addition to the guide assignment functions, the package includes some additional helper functions incl. for
@@ -20,11 +20,10 @@ In addition to the guide assignment functions, the package includes some additio
 * visualization and comparison of different methods (`plot_intersection_heatmap`, tutorials)
 
 ## Installation
-
-to be filled
+To install crispat, clone this repository and then run `python setup.py install`. We are planning to also submit this package to PyPI soon for easier installation. 
 
 ## Getting started
-An example use case is shown for `example_data` in the [`guide_assignment.ipynb`](guide_assignment.ipynb) script. Tutorials based on R using the SCEPTRE package on how to evaluate difference between methods for downstream analyses can be found in the [`tutorials`](tutorials/) directory. 
+An example use case is shown for `example_data` in the [`guide_assignment.ipynb`](tutorials/guide_assignment.ipynb) script. Tutorials based on R using the SCEPTRE package on how to evaluate difference between methods for downstream analyses can be found in the [`tutorials/downstream_analyses`](tutorials/downstream_analyses) directory. 
 
 ## Documentation
 
