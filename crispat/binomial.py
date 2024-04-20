@@ -11,6 +11,8 @@ from scipy.sparse import csr_matrix
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import time
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 
 import pyro
 import pyro.distributions as dist
@@ -211,19 +213,42 @@ def get_perturbed_cells(adata_crispr, estimates, gRNA):
     return perturbed_cells
 
 
-def ga_binomial(input_file, batch_list, output_dir, start_gRNA = 0, gRNA_step = None, 
-                n_iter = 500, subsample_size = 15000):
+def parallel_assignment(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter, subsample_size):
+    '''
+    Call assignment function for one gRNA 
+    
+    Args:
+        gRNA (str): name of the gRNA
+        adata_crispr (AnnData): anndata object with UMI counts of CRISPR Guide Capture
+        batch_list (list): list of all batches
+        output_dir (str): directory in which the resulting plots will be saved
+        seed (int): seed used for pyro
+        n_iter (int): number of steps for training the model
+        subsample_size (int): number of cells to use for each step
+    
+    Returns:
+        gRNA, loss, MAP_estimates, perturbed_cells
+    '''
+    loss, map_estimates = fit_Binomial(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter, subsample_size)
+    perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+    return gRNA, loss, map_estimates, perturbed_cells
+
+
+def ga_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_list = None, 
+                n_iter = 500, subsample_size = 15000, parallelize = True, n_processes = None):
     '''
     Guide assignment in which a binomial mixture model is fitted to the gRNA counts
     
     Args:
         input_file (str): path to the stored anndata object with the gRNA counts
-        batch_list (list): list of batches for which to fit the mixture model
         output_dir (str): directory in which to store the resulting assignment
-        start_gRNA (int): index of the start gRNA when parallelizing assignment for gRNA sets
-        gRNA_step (int): number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)
-        n_iter (int): number of steps for training the model
-        subsample_size (int): number of cells to use for each step
+        start_gRNA (int, optional): index of the start gRNA when parallelizing assignment for gRNA sets
+        gRNA_step (int, optional): number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)
+        batch_list (list, optional): list of batches for which to fit the mixture model. If none (default), all available batches are used. 
+        n_iter (int, optional): number of steps for training the model
+        subsample_size (int, optional): number of cells to use for each step
+        parallelize (bool, optional): whether to parallelize the computation over the gRNA (default = True)
+        n_processes (int, optional): specifies number of processes to use for parallelization if parallelize = True. If set to None (default), all available CPUs will be used (if this number is not higher than the number of gRNAs). 
         
     Returns:
         None
@@ -240,7 +265,10 @@ def ga_binomial(input_file, batch_list, output_dir, start_gRNA = 0, gRNA_step = 
     print('Load gRNA counts')
     adata_crispr = sc.read_h5ad(input_file)
     # subset to specified batches
-    adata_crispr = adata_crispr[adata_crispr.obs['batch'].isin(batch_list)].copy()
+    if batch_list != None:
+        adata_crispr = adata_crispr[adata_crispr.obs['batch'].isin(batch_list)].copy()
+    else:
+        batch_list = adata_crispr.obs['batch'].unique()
 
     # Add total number of gRNA counts per cell 
     adata_crispr.obs['total_counts'] = np.array(adata_crispr.X.sum(axis = 1)).flatten()
@@ -258,16 +286,39 @@ def ga_binomial(input_file, batch_list, output_dir, start_gRNA = 0, gRNA_step = 
     losses = pd.DataFrame({'gRNA': [], 'loss': []})
     estimates = pd.DataFrame()
     print('Fit Binomial Model for each gRNA')
-    for gRNA in tqdm(gRNA_list):
-        time.sleep(0.01)
-        # fit the model to infer the parameters
-        loss, map_estimates = fit_Binomial(gRNA, adata_crispr, batch_list, output_dir, 2024, n_iter, subsample_size)
-        losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
-        estimates = pd.concat([estimates, map_estimates])
+    
+    if parallelize:  
+        if n_processes == None:
+            n_processes = os.cpu_count() # if not specified all available CPUs will be used
+        if n_processes > len(gRNA_list):
+            n_processes = len(gRNA_list)
+        print(str(n_processes) + ' parallel processes used')
+          
+        partial_function = partial(parallel_assignment, adata_crispr = adata_crispr, batch_list = batch_list, 
+                                   output_dir = output_dir, seed = 2024, n_iter = n_iter, subsample_size = subsample_size)
         
-        # get the perturbed cells
-        perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
-        perturbations = pd.concat([perturbations, perturbed_cells])
+        # run in parallel over gRNAs
+        with ProcessPoolExecutor(max_workers=n_processes) as executor:
+            results = list(executor.map(partial_function, gRNA_list))
+        
+        # combine the results per gRNA
+        for gRNA, loss, map_estimates, perturbed_cells in results:
+            losses = pd.concat([losses, pd.DataFrame({'gRNA': ['gRNA'], 'loss': [loss]})])
+            estimates = pd.concat([estimates, map_estimates])
+            perturbations = pd.concat([perturbations, perturbed_cells])
+    
+    # Fit Binomial model without parallelization
+    else:
+        for gRNA in tqdm(gRNA_list):
+            time.sleep(0.01)
+            # fit the model to infer the parameters
+            loss, map_estimates = fit_Binomial(gRNA, adata_crispr, batch_list, output_dir, 2024, n_iter, subsample_size)
+            losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
+            estimates = pd.concat([estimates, map_estimates])
+
+            # get the perturbed cells
+            perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+            perturbations = pd.concat([perturbations, perturbed_cells])
         
     # Save data frames with the results
     if gRNA_step == None:

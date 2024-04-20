@@ -208,16 +208,16 @@ def get_threshold(weights, alphas, betas):
     return threshold
 
 
-def ga_3beta(input_file, batch_list, output_dir, n_iter = 500):
+def ga_3beta(input_file, output_dir, n_iter = 500, batch_list = None):
     '''
     Guide assignment in which a mixture model of 3 Beta distributions is fitted to the ratios of 
     the most abundant gRNAs to determine a batch-specific threshold on the ratios 
     
     Args:
-        input_file (str): path to the stored anndata object with the gRNA counts
-        batch_list (list): list of batches for which to fit the mixture model
-        output_dir (str): directory in which to store the resulting assignment
-        n_iter (int, optional): number of steps for training the model
+        input_file (str): Path to the stored anndata object with the gRNA counts
+        output_dir (str): Directory in which to store the resulting assignment
+        n_iter (int, optional): Number of steps for training the model
+        batch_list (list, optional): List of batches for which to fit the mixture model. If none (default), all available batches are used
         
     Returns:
         None
@@ -233,8 +233,13 @@ def ga_3beta(input_file, batch_list, output_dir, n_iter = 500):
     # Load gRNA counts data
     print('Load gRNA counts')
     adata_crispr = sc.read_h5ad(input_file)
+    
     # subset to specified batches
-    adata_crispr = adata_crispr[adata_crispr.obs['batch'].isin(batch_list)].copy()
+    if batch_list != None:
+        adata_crispr = adata_crispr[adata_crispr.obs['batch'].isin(batch_list)].copy()
+    else:
+        batch_list = adata_crispr.obs['batch'].unique()
+        
     # Remove cells with 0 gRNA counts
     adata_crispr.obs['total_counts'] = np.array(adata_crispr.X.sum(axis = 1)).flatten()
     adata_crispr = adata_crispr[adata_crispr.obs['total_counts'] != 0].copy()

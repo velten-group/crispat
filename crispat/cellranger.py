@@ -29,8 +29,8 @@ def model(data):
     # Global variables
     weights = pyro.sample("weights", dist.Dirichlet(torch.tensor([0.9, 0.1])))
     with pyro.plate("components", 2):
-        locs = pyro.sample("locs", dist.Normal(3.0, 5.0))
-        scales = pyro.sample("scales", dist.LogNormal(2.0, 1.0))
+        locs = pyro.sample("locs", dist.Normal(1.0, 2.0))
+        scales = pyro.sample("scales", dist.LogNormal(1.0, 0.5))
 
     with pyro.plate("data", len(data)):
         # Local variables
@@ -45,7 +45,7 @@ def init_loc_fn(site):
     if site["name"] == "weights":
         return torch.tensor([0.9, 0.1])
     if site["name"] == "locs":
-        return torch.tensor([0.0, 3.0])
+        return torch.tensor([0.0, 2.0])
     if site["name"] == "scales":
         return torch.tensor([1.0, 1.0])
     raise ValueError(site["name"])
@@ -67,6 +67,7 @@ def initialize(seed, optim, elbo, data):
     pyro.clear_param_store()
     global_guide = AutoDelta(
         poutine.block(model, expose=["weights", "locs", "scales"]),
+        init_loc_fn = init_loc_fn,
     )
     svi = SVI(model, global_guide, optim, loss=elbo)
     return svi.loss(model, global_guide, data)
@@ -86,7 +87,6 @@ def plot_loss(losses, gRNA, output_dir):
     plt.plot(losses)
     plt.xlabel("iters")
     plt.ylabel("loss")
-    #plt.yscale("log")
     plt.title("Convergence of SVI for " + gRNA)
     plt.savefig(output_dir+"loss_plots/loss_"+gRNA+".png", bbox_inches="tight")
     plt.close()
@@ -111,15 +111,16 @@ def plot_fitted_model(data, weights, locs, scales, threshold, gRNA, output_dir):
     Y2 = weights[1] * stats.norm.pdf(X, locs[1], scales[1])
 
     fig, ax = plt.subplots(figsize=(8, 3), dpi=300)
-    sns.histplot(data, binwidth=0.1, color='grey', stat = "proportion", discrete = True)
+    sns.histplot(data, binwidth=0.1, color='grey', stat = "proportion")
     ax.plot(X, Y1, "r-", label = "Normal 1")
     ax.plot(X, Y2, "b-", label = "Normal 2")
     ax.plot(X, Y1 + Y2, "k--", label = "Mixture model")
+    ax.set_ylim(0, 1)
     ax.axvline(threshold, c = "green", label = "Threshold")
     plt.legend()
     plt.title("Gaussian mixture model for " + gRNA)
     plt.ylabel("Probability Density")
-    plt.xlabel("Log2 " + gRNA + " UMI counts")
+    plt.xlabel("Log10 " + gRNA + " UMI counts")
     plt.savefig(output_dir + "fitted_model_plots/fitted_model_" + gRNA + ".png", bbox_inches="tight")
     plt.close()
     
@@ -149,7 +150,7 @@ def prob_normal_component(X, weights, locs, scales):
     return prob
 
 
-def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter):
+def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
     '''
     Fits Gaussian mixture model for log2 of non-zero UMI counts of one gRNA 
     Args:
@@ -158,25 +159,31 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter):
         output_dir: (str) directory in which the resulting plots will be saved
         seed: (int) seed used for pyro
         n_iter (int, optional): number of steps for training the model
+        nonzero (bool): if true fit the GMM on the nonzero values only
     Returns:
         List of cells perturbed with the specified gRNA, as well as the inferred threshold
     '''
     # Set optimizer and elbo parameters
-    optim = pyro.optim.Adam({"lr": 0.01, "betas": [0.8, 0.99]})
+    optim = pyro.optim.Adam({"lr": 0.01})
     elbo = TraceEnum_ELBO(num_particles = 1, max_plate_nesting=1)
     
     # Data used to fit the model: log10 transformation of UMI counts for a given gRNA 
     selected_guide = adata_crispr[:,[gRNA]].X
     data = selected_guide.toarray() 
     data = torch.tensor(np.log10(data + 1)).reshape(-1).float() 
+    if nonzero:
+        data = data[data!=0]
     
-    # Only fit model for gRNAs with a maximum count of at least 2
-    if max(data) < np.log10(2):
+    # Only fit model for gRNAs with non-zero counts in at least 2 cells and with a maximum count of at least 2
+    if len(data) < 2:   
+        print(gRNA + " has only " + str(len(data)) + " cells with non-zero counts, so no model is fitted for that gRNA")
+        return([], 0, 0, 0)
+    if max(data) < np.log10(2 + 1):
         print("Max log10 UMI count for " + gRNA + " is " + str(max(data)) + ", so no model is fitted for that gRNA")
         return([], 0, 0, 0)
       
     # Choose the best among 10 random initializations.
-    loss, seed = min((initialize(seed, optim, elbo, data), seed) for seed in range(10))
+    #loss, seed = min((initialize(seed, optim, elbo, data), seed) for seed in range(10))
 
     # Initialization of SVI
     initialize(seed, optim, elbo, data)
@@ -192,11 +199,12 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter):
             min_loss = loss
             last_step = step
         losses.append(loss)
-        if (step - last_step) > 50:
-            break
+        #if (step - last_step) > 50:
+        #    break
  
     # MAP estimates of the model
     map_estimates = global_guide(data)
+
     weights = map_estimates["weights"].data.numpy()
     locs = map_estimates["locs"].data.numpy()
     scales = map_estimates["scales"].data.numpy()
@@ -208,12 +216,15 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter):
                               'scale1': [scales[0]],
                               'scale2': [scales[1]]})
 
+    # create plot of the loss
+    plot_loss(losses, gRNA, output_dir)
+    
     # threshold for which probability is higher to belong to the higher normal component
-    X = np.arange(1, max(selected_guide.toarray())+1, 1)
+    X = np.arange(1, max(selected_guide.toarray()) + 1, 1)
     log_X = np.log10(X + 1)
     df = pd.DataFrame({'t': X, 'prob_normal_component': prob_normal_component(log_X, weights, locs, scales)})
-    threshold = df.loc[(df.prob_normal_component > 0.5), 't'].min()
-    
+    threshold = df.loc[(df.prob_normal_component >= 0.5), 't'].min()
+
     # create plot of the mixture distribution
     plot_fitted_model(data, weights, locs, scales, np.log10(threshold+1), gRNA, output_dir)
     
@@ -222,17 +233,18 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter):
     return(perturbed_cells, threshold, losses[-1], estimates)
 
 
-def ga_cellranger(input_file, batch_list, output_dir, start_gRNA = 0, step = None, n_iter = 500):
+def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_list = None, n_iter = 200, nonzero = False):
     '''
     Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts
     
     Args:
         input_file: (str) path to the stored anndata object with the gRNA counts
-        batch_list: (list) list of batches for which to fit the mixture model
         output_dir: (str) directory in which to store the resulting assignment
         start_gRNA: (int, optional) index of the start gRNA when parallelizing assignment for gRNA sets
         step: (int, optional) number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)
+        batch_list: (list, optional) list of batches for which to fit the mixture model. If none, mixture model is fited for all batches
         n_iter (int, optional): number of steps for training the model
+        nonzero (bool, optional): if True fit the mixture model on the nonzero values only, otherwise all values are used
     
     Returns:
         None
@@ -241,6 +253,9 @@ def ga_cellranger(input_file, batch_list, output_dir, start_gRNA = 0, step = Non
     # Load gRNA counts data
     print('Load gRNA counts')
     adata_crispr = sc.read_h5ad(input_file)
+    
+    if batch_list == None:
+        batch_list = adata_crispr.obs['batch'].unique()
     
     for batch in batch_list:
         print('Fit Gaussian Mixture models for batch ' + str(batch))
@@ -269,7 +284,8 @@ def ga_cellranger(input_file, batch_list, output_dir, start_gRNA = 0, step = Non
 
         for gRNA in gRNA_list:
             perturbed_cells, threshold, loss, map_estimates = fit_GMM(gRNA, adata_crispr, 
-                                                                      output_dir + 'batch' + str(batch) + '/', 2024, n_iter)
+                                                                      output_dir + 'batch' + str(batch) + '/', 
+                                                                      2024, n_iter, nonzero)
             if len(perturbed_cells) != 0:
                 df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA})
                 perturbations = pd.concat([perturbations, df], ignore_index = True)

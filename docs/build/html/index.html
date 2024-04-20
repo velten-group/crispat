@@ -43,7 +43,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">List of all functions:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="crispat.html">crispat package</a></li>
 </ul>
@@ -74,9 +74,10 @@
              
   <section id="documentation-for-crispat">
 <h1>Documentation for crispat<a class="headerlink" href="#documentation-for-crispat" title="Link to this heading"></a></h1>
-<p>Pooled single-cell CRISPR screens are a powerful tool for systematically gaining new insights into the functional consequences of genetic perturbations in high-throughput analyses. To allow for meaningful downstream analyses and biological insights about gene regulatory mechanisms from single-cell CRISPR screen experiments a first crucial step is the assignment of cells to specific perturbations that are defined during guide assignment. In guide assignment, thresholds on the measured gRNA counts per cell are used to distinguish between background noise and the actual perturbation state of a cell. However, lots of different guide assignment strategies and thresholds are used by different labs without any guidance on what model or threshold to choose when. Focusing on low MOI CRISPRi screens we systematically compared various methods for guide assignment in terms of the number of assigned cells, the effectiveness of target gene downregulation in assigned cells, as well as the number of false and total discoveries. The methods in this benchmark include simple approaches such as a threshold on the UMI counts or assigning the gRNA with highest counts per cell, as well as more advanced models taking into account the variability per cell, the variability per gRNA, or both. Even though there is a high overlap for the assigned cells across methods, the total number of assigned cells varies strongly. Furthermore, we observed that it is crucial to determine reasonable dataset dependent thresholds per method since there is a trade-off between a gain in statistical power and a less effective average target gene downregulation when assigning more cells. Therefore, we provide our CRISPR guide Assignment Tool (<strong>crispat</strong>) as a python package which allows easy comparison of various guide assignment approaches to find a suitable assignment for low MOI CRISPR screen data sets.</p>
+<p>Pooled single-cell CRISPR screens are a powerful tool for systematically gaining new insights into the functional consequences of genetic perturbations in high-throughput analyses. To allow for meaningful downstream analyses and biological insights about gene regulatory mechanisms from single-cell CRISPR screen experiments a first crucial step is guide assignment, where cells are assigned to specific guides and corresponding genetic targets. For this, thresholds on the measured gRNA counts per cell are used to distinguish between background contamination and the actual guide presence in a cell. However, lots of different guide assignment strategies and thresholds are used by different labs without any guidance on what model or threshold to choose when.</p>
+<p>As demonstrated on low MOI CRISPRi screens in our preprint [Braunger et al, 2024](link to the preprint will be added soon) the choice of guide assignment strategy strongly influences the results, highlighting the need to choose a suitable strategy for the data at hand for a reliable and powerful analysis of the data. To help with this choice the crispat package implements 11 different assignment methods and facilitates their comparison.</p>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">List of all functions:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="crispat.html">crispat package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.combine_assignments"><code class="docutils literal notranslate"><span class="pre">combine_assignments()</span></code></a></li>
@@ -84,8 +85,6 @@
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.create_anndata_from_csv"><code class="docutils literal notranslate"><span class="pre">create_anndata_from_csv()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_2beta"><code class="docutils literal notranslate"><span class="pre">ga_2beta()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_3beta"><code class="docutils literal notranslate"><span class="pre">ga_3beta()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_SCEPTRE"><code class="docutils literal notranslate"><span class="pre">ga_SCEPTRE()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_UMI"><code class="docutils literal notranslate"><span class="pre">ga_UMI()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_binomial"><code class="docutils literal notranslate"><span class="pre">ga_binomial()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_cellranger"><code class="docutils literal notranslate"><span class="pre">ga_cellranger()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_max"><code class="docutils literal notranslate"><span class="pre">ga_max()</span></code></a></li>
@@ -93,6 +92,8 @@
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_quantiles"><code class="docutils literal notranslate"><span class="pre">ga_quantiles()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_ratio"><code class="docutils literal notranslate"><span class="pre">ga_ratio()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_replogle"><code class="docutils literal notranslate"><span class="pre">ga_replogle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_sceptre"><code class="docutils literal notranslate"><span class="pre">ga_sceptre()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.ga_umi"><code class="docutils literal notranslate"><span class="pre">ga_umi()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.load_assignments"><code class="docutils literal notranslate"><span class="pre">load_assignments()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="crispat.html#crispat.plot_intersection_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_intersection_heatmap()</span></code></a></li>
 </ul>

@@ -1,31 +1,33 @@
+import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def combine_assignments(data_dir, start_gRNAs, end_gRNAs):
+def combine_assignments(data_dir):
     '''
     Combines assignment files for methods that have been performed on gRNA subsets
     
     Args:
         data_dir (str): directory containing the assignment output
-        start_gRNAs (list): list of gRNA start indices
-        end_gRNAs (list): list of gRNA end indices
-        
     Returns:
         None
     '''
+    # check which perturbation files are in the directory
+    all_files = os.listdir(data_dir)
+    csv_files = [file for file in all_files if file.startswith('perturbations_') and file.endswith('.csv')]
+
     perturbations = pd.DataFrame()
-
-    for index in range(len(start_gRNAs)):
-        start = start_gRNAs[index]
-        end = end_gRNAs[index]
-
-        # read in data for selected gRNA subset
-        perturbations_g = pd.read_csv(data_dir + "perturbations_" + str(start) + "-" + str(end) + ".csv")
-        perturbations = pd.concat([perturbations, perturbations_g])
-
+    
+    # read in data for all gRNA subsets
+    for file in csv_files:
+        perturbations_g = pd.read_csv(data_dir + file)
+        perturbations = pd.concat([perturbations, perturbations_g], ignore_index = True)
+    
+    # remove duplicates (in case there were overlapping indices)
+    perturbations = perturbations.drop_duplicates()
+    
     # save file containing all gRNAs
     perturbations.to_csv(data_dir + "perturbations.csv")
     
@@ -83,13 +85,13 @@ def get_intersections(pert_dict):
     return results
 
 
-def plot_intersection_heatmap(perturbations, colors):
+def plot_intersection_heatmap(perturbations, colors = None):
     '''
     Plot a heatmap with intersection proportions and a barplot with the number of assignments per method
     
     Args:
         perturbations (pd DataFrame): df with the assigned perturbations (needed columns: method, cell, gRNA)
-        colors (dictionary): specifies the colors to use for each method in the barplot
+        colors (dictionary, optional): specifies the colors to use for each method in the barplot
         
     Returns:
         A matplotlib plot consisting of two subfigures (intersection heatmap and number of assignments barplot)
@@ -125,6 +127,9 @@ def plot_intersection_heatmap(perturbations, colors):
     plt.colorbar(cax, label='Intersection / N Row')
     
     # plot barplot with set size on the right
+    if colors == None:
+        colors = sns.color_palette("husl", n_colors = n_assignments_per_method.shape[0])
+    
     sns.barplot(data = n_assignments_per_method, y = "method", x = "count", ax = axs[1],
                palette = colors)
     axs[1].set_xlabel('')
