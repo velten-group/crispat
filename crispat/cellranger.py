@@ -27,15 +27,18 @@ def model(data):
     Gaussian-Gaussian Mixture Model 
     '''
     # Global variables
-    weights = pyro.sample("weights", dist.Dirichlet(torch.tensor([0.9, 0.1])))
+    weights = pyro.sample("weights", dist.Dirichlet(torch.tensor([0.99, 0.01])))
     with pyro.plate("components", 2):
         locs = pyro.sample("locs", dist.Normal(1.0, 2.0))
-        scales = pyro.sample("scales", dist.LogNormal(1.0, 0.5))
-
+        #scales = pyro.sample("scales", dist.LogNormal(1.0, 0.5))
+    
+    scale = pyro.sample("scales", dist.LogNormal(1.0, 0.5))
+    
     with pyro.plate("data", len(data)):
         # Local variables
         assignment = pyro.sample("assignment", dist.Categorical(weights)) 
-        pyro.sample("obs", dist.Normal(locs[assignment], scales[assignment]), obs=data)
+        #pyro.sample("obs", dist.Normal(locs[assignment], scales[assignment]), obs=data)
+        pyro.sample("obs", dist.Normal(locs[assignment], scale), obs=data)
         
 
 def init_loc_fn(site):
@@ -43,11 +46,11 @@ def init_loc_fn(site):
     Define initial parameter values
     '''
     if site["name"] == "weights":
-        return torch.tensor([0.9, 0.1])
+        return torch.tensor([0.99, 0.01])
     if site["name"] == "locs":
-        return torch.tensor([0.0, 2.0])
+        return torch.tensor([0.0, 3.0])
     if site["name"] == "scales":
-        return torch.tensor([1.0, 1.0])
+        return torch.tensor([0.1])
     raise ValueError(site["name"])
 
     
@@ -67,7 +70,7 @@ def initialize(seed, optim, elbo, data):
     pyro.clear_param_store()
     global_guide = AutoDelta(
         poutine.block(model, expose=["weights", "locs", "scales"]),
-        init_loc_fn = init_loc_fn,
+        #init_loc_fn = init_loc_fn,
     )
     svi = SVI(model, global_guide, optim, loss=elbo)
     return svi.loss(model, global_guide, data)
@@ -107,8 +110,8 @@ def plot_fitted_model(data, weights, locs, scales, threshold, gRNA, output_dir):
         None
     '''
     X = np.arange(0, max(data)+1, 0.01)
-    Y1 = weights[0] * stats.norm.pdf(X, locs[0], scales[0])
-    Y2 = weights[1] * stats.norm.pdf(X, locs[1], scales[1])
+    Y1 = weights[0] * stats.norm.pdf(X, locs[0], scales)
+    Y2 = weights[1] * stats.norm.pdf(X, locs[1], scales)
 
     fig, ax = plt.subplots(figsize=(8, 3), dpi=300)
     sns.histplot(data, binwidth=0.1, color='grey', stat = "proportion")
@@ -144,8 +147,11 @@ def prob_normal_component(X, weights, locs, scales):
         h = 1
         l = 0
         
-    nominator = stats.norm.pdf(X, locs[h], scales[h]) * weights[h]
-    denominator = nominator + stats.norm.pdf(X, locs[l], scales[l]) * weights[l]
+    #nominator = stats.norm.pdf(X, locs[h], scales[h]) * weights[h]
+    #denominator = nominator + stats.norm.pdf(X, locs[l], scales[l]) * weights[l]
+    nominator = stats.norm.pdf(X, locs[h], scales) * weights[h]
+    denominator = nominator + stats.norm.pdf(X, locs[l], scales) * weights[l]
+    #print(nominator, denominator)
     prob = nominator / denominator
     return prob
 
@@ -164,7 +170,7 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
         List of cells perturbed with the specified gRNA, as well as the inferred threshold
     '''
     # Set optimizer and elbo parameters
-    optim = pyro.optim.Adam({"lr": 0.01})
+    optim = pyro.optim.Adam({"lr": 0.02})
     elbo = TraceEnum_ELBO(num_particles = 1, max_plate_nesting=1)
     
     # Data used to fit the model: log10 transformation of UMI counts for a given gRNA 
@@ -183,7 +189,7 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
         return([], 0, 0, 0)
       
     # Choose the best among 10 random initializations.
-    #loss, seed = min((initialize(seed, optim, elbo, data), seed) for seed in range(10))
+    loss, seed = min((initialize(seed, optim, elbo, data), seed) for seed in range(10))
 
     # Initialization of SVI
     initialize(seed, optim, elbo, data)
@@ -213,8 +219,12 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
                               'weight_Normal2': [weights[1]], 
                               'mu1': [locs[0]], 
                               'mu2': [locs[1]], 
-                              'scale1': [scales[0]],
-                              'scale2': [scales[1]]})
+                              'scale1': [scales],
+                              'scale2': [scales]})
+    
+    #print('weights: ' + str(weights))
+    #print('means: ' + str(locs))
+    #print('var: ' + str(scales))
 
     # create plot of the loss
     plot_loss(losses, gRNA, output_dir)
@@ -224,6 +234,7 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
     log_X = np.log10(X + 1)
     df = pd.DataFrame({'t': X, 'prob_normal_component': prob_normal_component(log_X, weights, locs, scales)})
     threshold = df.loc[(df.prob_normal_component >= 0.5), 't'].min()
+    #print('t: ' + str(threshold))
 
     # create plot of the mixture distribution
     plot_fitted_model(data, weights, locs, scales, np.log10(threshold+1), gRNA, output_dir)
@@ -233,7 +244,7 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
     return(perturbed_cells, threshold, losses[-1], estimates)
 
 
-def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_list = None, n_iter = 200, nonzero = False):
+def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_list = None, n_iter = 500, nonzero = False):
     '''
     Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts
     

@@ -25,7 +25,7 @@ from pyro.infer import SVI, TraceEnum_ELBO, config_enumerate
 @config_enumerate
 def model(data, n_batches):
     '''
-    Negative Binomial Model 
+    Poisson Mixture Model 
     '''
     # Global variables for each gRNA
     beta0 = pyro.sample("beta0", dist.Normal(0.0, 3.0))
@@ -238,7 +238,7 @@ def parallel_assignment(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter
     return gRNA, loss, map_estimates, perturbed_cells
             
         
-def ga_sceptre(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_list = None, n_iter = 2500, 
+def ga_poisson(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_list = None, n_iter = 2500, 
                subsample_size = 15000, parallelize = True, n_processes = None):
     '''
     Guide assignment with a Poisson mixture model based on SCEPTRE approach

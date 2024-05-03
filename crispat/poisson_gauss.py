@@ -265,7 +265,7 @@ def fit_PGMM(gRNA, adata_crispr, output_dir, seed, n_iter):
     return(perturbed_cells, threshold, losses[-1], estimates)
 
 
-def ga_replogle(input_file, output_dir, start_gRNA = 0, step = None, n_iter = 500):
+def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter = 500):
     '''
     Guide assignment in which a Poisson-Gaussian mixture model is fitted to the non-zero log-transformed UMI counts
     

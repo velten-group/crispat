@@ -1,10 +1,10 @@
 [project]
 name = "crispat"
-version = "0.0.9"
+version = "0.9.0"
 authors = [
-  { name="Jana M. Braunger", email="jana.Braunger@cos.uni-heidelberg.de" },
+  { name="Jana M. Braunger", email="jana.braunger@cos.uni-heidelberg.de" },
 ]
-description = "CRISPR guide Assignment Tool"
+description = "CRISPR guide assignment tool"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
@@ -14,4 +14,4 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/"
+Homepage = "https://github.com/velten-group/crispat"
