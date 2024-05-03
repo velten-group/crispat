@@ -274,6 +274,7 @@ def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_lis
         if not os.path.exists(output_dir + 'batch' + str(batch) + '/'):
             os.makedirs(output_dir + 'batch' + str(batch) + '/')
             os.makedirs(output_dir + 'batch' + str(batch) + "/fitted_model_plots/")
+            os.makedirs(output_dir + 'batch' + str(batch) + "/loss_plots/")
             #print("The output directory " + output_dir + 'batch' + str(batch) + '/' +  " was created")
 
         # Subset to selected batch

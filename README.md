@@ -1,4 +1,4 @@
-# crispat: CRISPR guide Assignment Toolkit
+# crispat: CRISPR guide assignment tool
 
 Pooled single-cell CRISPR screens are a powerful tool for systematically gaining new insights into the functional consequences of genetic perturbations in high-throughput analyses. To allow for meaningful downstream analyses and biological insights about gene regulatory mechanisms from single-cell CRISPR screen experiments a first crucial step is guide assignment, where cells are assigned to specific guides and corresponding genetic targets. For this, thresholds on the measured gRNA counts per cell are used to distinguish between background contamination and the actual guide presence in a cell. However, lots of different guide assignment strategies and thresholds are used by different labs without any guidance on what model or threshold to choose when. 
 
@@ -6,7 +6,7 @@ As demonstrated on *low MOI CRISPRi* screens in our preprint [Braunger et al, 20
 
 ## Guide assignment methods
 Methods include simple approaches such as a threshold on the UMI counts or assigning the gRNA with highest counts per cell, as well as more advanced models taking into account the variability per cell, the variability per gRNA, or both. Methods are grouped into 4 main categories based on the information that is used during assignment:
-- independent (`ga_UMI`)
+- independent (`ga_umi`)
 - across gRNAs (`ga_max`, `ga_ratio`)
 - across cells (`ga_cellranger`, `ga_poisson_gauss`)
 - across gRNAs and across cells (`ga_2beta`, `ga_3beta`, `ga_poisson`, `ga_negative_binomial`, `ga_binomial`, `ga_quantiles`)

@@ -258,8 +258,8 @@ def ga_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_
     # If output_dir doesn't exist, the output folders are created
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-        os.makedirs(output_dir + "loss_plots/")
-        print("The output directory " + output_dir +  " was created")
+    os.makedirs(output_dir + "loss_plots/")
+        
 
     # Load gRNA counts data
     print('Load gRNA counts')
