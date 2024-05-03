@@ -43,7 +43,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">List of all functions:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">crispat package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#crispat.combine_assignments"><code class="docutils literal notranslate"><span class="pre">combine_assignments()</span></code></a></li>
@@ -55,10 +55,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#crispat.ga_cellranger"><code class="docutils literal notranslate"><span class="pre">ga_cellranger()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#crispat.ga_max"><code class="docutils literal notranslate"><span class="pre">ga_max()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#crispat.ga_negative_binomial"><code class="docutils literal notranslate"><span class="pre">ga_negative_binomial()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_poisson"><code class="docutils literal notranslate"><span class="pre">ga_poisson()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_poisson_gauss"><code class="docutils literal notranslate"><span class="pre">ga_poisson_gauss()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#crispat.ga_quantiles"><code class="docutils literal notranslate"><span class="pre">ga_quantiles()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#crispat.ga_ratio"><code class="docutils literal notranslate"><span class="pre">ga_ratio()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_replogle"><code class="docutils literal notranslate"><span class="pre">ga_replogle()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#crispat.ga_sceptre"><code class="docutils literal notranslate"><span class="pre">ga_sceptre()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#crispat.ga_umi"><code class="docutils literal notranslate"><span class="pre">ga_umi()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#crispat.load_assignments"><code class="docutils literal notranslate"><span class="pre">load_assignments()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#crispat.plot_intersection_heatmap"><code class="docutils literal notranslate"><span class="pre">plot_intersection_heatmap()</span></code></a></li>
@@ -207,7 +207,7 @@ the most abundant gRNAs to determine a batch-specific threshold on the ratios</p
 
 <dl class="py function">
 <dt class="sig sig-object py" id="crispat.ga_cellranger">
-<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_cellranger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonzero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_cellranger" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_cellranger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonzero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_cellranger" title="Link to this definition"></a></dt>
 <dd><p>Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -268,6 +268,50 @@ the most abundant gRNAs to determine a batch-specific threshold on the ratios</p
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_poisson">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_poisson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gRNA_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallelize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_poisson" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment with a Poisson mixture model based on SCEPTRE approach</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
+<li><p><strong>start_gRNA</strong> (<em>int</em><em>, </em><em>optional</em>) – index of the start gRNA when parallelizing assignment for gRNA sets</p></li>
+<li><p><strong>gRNA_step</strong> (<em>int</em><em>, </em><em>optional</em>) – number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)</p></li>
+<li><p><strong>batch_list</strong> (<em>list</em><em>, </em><em>opitonal</em>) – list of batches for which to fit the mixture model. If none (default), all available batches are used.</p></li>
+<li><p><strong>n_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – number of steps for training the model</p></li>
+<li><p><strong>subsample_size</strong> (<em>int</em><em>, </em><em>optional</em>) – number of cells to use for each step</p></li>
+<li><p><strong>parallelize</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to parallelize the computation over the gRNA (default = True)</p></li>
+<li><p><strong>n_processes</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies number of processes to use for parallelization if parallelize = True. If set to None (default), all available CPUs will be used (if this number is not higher than the number of gRNAs).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="crispat.ga_poisson_gauss">
+<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_poisson_gauss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_poisson_gauss" title="Link to this definition"></a></dt>
+<dd><p>Guide assignment in which a Poisson-Gaussian mixture model is fitted to the non-zero log-transformed UMI counts</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
+<li><p><strong>start_gRNA</strong> (<em>int</em><em>, </em><em>optional</em>) – index of the start gRNA when parallelizing assignment for gRNA sets</p></li>
+<li><p><strong>step</strong> (<em>int</em><em>, </em><em>optional</em>) – number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)</p></li>
+<li><p><strong>n_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – number of steps for training the model</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="crispat.ga_quantiles">
 <span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_quantiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thresholds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_quantiles" title="Link to this definition"></a></dt>
 <dd><p>Guide assignment in which the X% non-zero cells with highest ratios are assigned per gRNA</p>
@@ -296,50 +340,6 @@ more than X% of the total counts in a cell</p>
 <li><p><strong>input_file</strong> – (str) path to the stored anndata object with the gRNA counts</p></li>
 <li><p><strong>thresholds</strong> – (list) list of ratio thresholds to use (generates one output file per ratio)</p></li>
 <li><p><strong>output_dir</strong> – (str) directory in which to store the resulting assignment</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="crispat.ga_replogle">
-<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_replogle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_replogle" title="Link to this definition"></a></dt>
-<dd><p>Guide assignment in which a Poisson-Gaussian mixture model is fitted to the non-zero log-transformed UMI counts</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
-<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
-<li><p><strong>start_gRNA</strong> (<em>int</em><em>, </em><em>optional</em>) – index of the start gRNA when parallelizing assignment for gRNA sets</p></li>
-<li><p><strong>step</strong> (<em>int</em><em>, </em><em>optional</em>) – number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)</p></li>
-<li><p><strong>n_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – number of steps for training the model</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="crispat.ga_sceptre">
-<span class="sig-prename descclassname"><span class="pre">crispat.</span></span><span class="sig-name descname"><span class="pre">ga_sceptre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_gRNA</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gRNA_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallelize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crispat.ga_sceptre" title="Link to this definition"></a></dt>
-<dd><p>Guide assignment with a Poisson mixture model based on SCEPTRE approach</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>input_file</strong> (<em>str</em>) – path to the stored anndata object with the gRNA counts</p></li>
-<li><p><strong>output_dir</strong> (<em>str</em>) – directory in which to store the resulting assignment</p></li>
-<li><p><strong>start_gRNA</strong> (<em>int</em><em>, </em><em>optional</em>) – index of the start gRNA when parallelizing assignment for gRNA sets</p></li>
-<li><p><strong>gRNA_step</strong> (<em>int</em><em>, </em><em>optional</em>) – number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)</p></li>
-<li><p><strong>batch_list</strong> (<em>list</em><em>, </em><em>opitonal</em>) – list of batches for which to fit the mixture model. If none (default), all available batches are used.</p></li>
-<li><p><strong>n_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – number of steps for training the model</p></li>
-<li><p><strong>subsample_size</strong> (<em>int</em><em>, </em><em>optional</em>) – number of cells to use for each step</p></li>
-<li><p><strong>parallelize</strong> (<em>bool</em><em>, </em><em>optional</em>) – whether to parallelize the computation over the gRNA (default = True)</p></li>
-<li><p><strong>n_processes</strong> (<em>int</em><em>, </em><em>optional</em>) – specifies number of processes to use for parallelization if parallelize = True. If set to None (default), all available CPUs will be used (if this number is not higher than the number of gRNAs).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
