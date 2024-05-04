@@ -14,6 +14,11 @@ author = 'Jana M. Braunger'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 import sys
 import os
+import subprocess
+
+# install crispat
+subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "../../"])
+import crispat
 
 sys.path.insert(0, os.path.abspath('../../'))
 
