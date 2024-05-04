@@ -17,10 +17,3 @@ As demonstrated on low MOI CRISPRi screens in our preprint [Braunger et al, 2024
    
    crispat
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
