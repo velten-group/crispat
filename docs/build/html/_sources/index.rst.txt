@@ -13,7 +13,8 @@ As demonstrated on low MOI CRISPRi screens in our preprint [Braunger et al, 2024
 
 .. toctree::
    :maxdepth: 2
-   :caption: List of all functions:
+   :caption: Chapters:
    
-   crispat
-
+   data_preparation
+   guide_assignment
+   method_comparison

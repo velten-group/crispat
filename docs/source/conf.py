@@ -18,12 +18,12 @@ import subprocess
 
 # install crispat
 subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "../../"])
-import crispat
+
 
 sys.path.insert(0, os.path.abspath('../../'))
 
 extensions = [
-    #'sphinx.ext.autodoc',
+    'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
 ]
 
