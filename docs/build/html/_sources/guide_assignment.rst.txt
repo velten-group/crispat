@@ -53,7 +53,7 @@ In the last group of methods, information is shared across cells and across gRNA
 
 .. autofunction:: crispat.ga_negative_binomial
 
-**Latent variable Binomial generalized linear model (Binomial):** For every gRNA, this method fits a binomial distribution :math:`B(N_c, \theta_c)` with :math:`N_c` being the total number of gRNA counts per cell and :math:`\theta_c=sigmoid(e^\beta_0+\beta_1p_c+\beta_2b_c)` with :math:`\beta_0 \in R, \beta_1 \in R^+, \beta_2 \in R^n`, perturbation state :math:`p_c \in {0,1}` and one-hot encoded batch :math:`b_c`.
+**Latent variable Binomial generalized linear model (Binomial):** For every gRNA, this method fits a binomial distribution :math:`B(N_c, \theta_c)` with :math:`N_c` being the total number of gRNA counts per cell and :math:`\theta_c=sigmoid(e^{\beta_0+\beta_1p_c+\beta_2b_c})` with :math:`\beta_0 \in R, \beta_1 \in R^+, \beta_2 \in R^n`, perturbation state :math:`p_c \in {0,1}` and one-hot encoded batch :math:`b_c`.
 
 .. autofunction:: crispat.ga_binomial
 
