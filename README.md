@@ -27,4 +27,4 @@ An example use case is shown for `example_data` in the [`guide_assignment.ipynb`
 
 ## Documentation
 
-For details on individual functions in the package refer to the [crispat documentation](add link)
+For details on individual functions in the package refer to the [crispat documentation](https://crispat.readthedocs.io/en/latest/index.html).
