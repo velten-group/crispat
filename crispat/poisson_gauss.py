@@ -265,7 +265,7 @@ def fit_PGMM(gRNA, adata_crispr, output_dir, seed, n_iter):
     return(perturbed_cells, threshold, losses[-1], estimates)
 
 
-def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter = 500):
+def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter = 500, n_counts = None):
     '''
     Guide assignment in which a Poisson-Gaussian mixture model is fitted to the non-zero log-transformed UMI counts
     
@@ -275,6 +275,7 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
         start_gRNA (int, optional): index of the start gRNA when parallelizing assignment for gRNA sets
         step (int, optional): number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)
         n_iter (int, optional): number of steps for training the model
+        n_counts (int, optional): subsample the gRNA counts per cell to a total of n_counts. If None (default), the UMI count matrix is used without any downsampling.
         
     Returns:
         None
@@ -297,6 +298,10 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
         if end_gRNA >= len(gRNA_list):
             end_gRNA = len(gRNA_list) - 1
         gRNA_list = gRNA_list[start_gRNA:(end_gRNA + 1)]
+        
+    # Downsampling of gRNA counts per cell to a maximum of n_counts per cell
+    if n_counts != None:     
+        sc.pp.downsample_counts(adata_crispr, counts_per_cell = n_counts)
     
     # Fit Poisson-Gaussian Mixture Model (PGMM) for each gRNA
     perturbations = pd.DataFrame()
