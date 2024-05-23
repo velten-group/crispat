@@ -30,14 +30,12 @@ def model(data):
     weights = pyro.sample("weights", dist.Dirichlet(torch.tensor([0.99, 0.01])))
     with pyro.plate("components", 2):
         locs = pyro.sample("locs", dist.Normal(1.0, 2.0))
-        #scales = pyro.sample("scales", dist.LogNormal(1.0, 0.5))
-    
-    scale = pyro.sample("scales", dist.LogNormal(1.0, 0.5))
+
+    scale = pyro.sample("scales", dist.LogNormal(-3.0, 2.0))
     
     with pyro.plate("data", len(data)):
         # Local variables
         assignment = pyro.sample("assignment", dist.Categorical(weights)) 
-        #pyro.sample("obs", dist.Normal(locs[assignment], scales[assignment]), obs=data)
         pyro.sample("obs", dist.Normal(locs[assignment], scale), obs=data)
         
 
@@ -48,9 +46,9 @@ def init_loc_fn(site):
     if site["name"] == "weights":
         return torch.tensor([0.99, 0.01])
     if site["name"] == "locs":
-        return torch.tensor([0.0, 3.0])
+        return torch.tensor([0.0, 1.0])
     if site["name"] == "scales":
-        return torch.tensor([0.1])
+        return torch.tensor([0.01])
     raise ValueError(site["name"])
 
     
@@ -70,7 +68,7 @@ def initialize(seed, optim, elbo, data):
     pyro.clear_param_store()
     global_guide = AutoDelta(
         poutine.block(model, expose=["weights", "locs", "scales"]),
-        #init_loc_fn = init_loc_fn,
+        init_loc_fn = init_loc_fn,
     )
     svi = SVI(model, global_guide, optim, loss=elbo)
     return svi.loss(model, global_guide, data)
@@ -146,13 +144,12 @@ def prob_normal_component(X, weights, locs, scales):
     else:
         h = 1
         l = 0
-        
-    #nominator = stats.norm.pdf(X, locs[h], scales[h]) * weights[h]
-    #denominator = nominator + stats.norm.pdf(X, locs[l], scales[l]) * weights[l]
-    nominator = stats.norm.pdf(X, locs[h], scales) * weights[h]
-    denominator = nominator + stats.norm.pdf(X, locs[l], scales) * weights[l]
-    #print(nominator, denominator)
-    prob = nominator / denominator
+      
+    #pyro dist 
+    high = dist.Normal(torch.tensor(locs[h]), torch.tensor(scales)).log_prob(torch.tensor(X)) + np.log(weights[h])
+    low = dist.Normal(torch.tensor(locs[l]), torch.tensor(scales)).log_prob(torch.tensor(X)) + np.log(weights[l])
+    
+    prob = high > low
     return prob
 
 
@@ -170,7 +167,7 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
         List of cells perturbed with the specified gRNA, as well as the inferred threshold
     '''
     # Set optimizer and elbo parameters
-    optim = pyro.optim.Adam({"lr": 0.02})
+    optim = pyro.optim.Adam({"lr": 0.01})
     elbo = TraceEnum_ELBO(num_particles = 1, max_plate_nesting=1)
     
     # Data used to fit the model: log10 transformation of UMI counts for a given gRNA 
@@ -194,7 +191,7 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
     # Initialization of SVI
     initialize(seed, optim, elbo, data)
 
-    # Train the model n_iter steps with early stopping when loss doesn't change at least 0.001 for 50 steps
+    # Train the model n_iter steps 
     losses = []
     min_loss = 1.e8
     last_step = 0
@@ -205,8 +202,6 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
             min_loss = loss
             last_step = step
         losses.append(loss)
-        #if (step - last_step) > 50:
-        #    break
  
     # MAP estimates of the model
     map_estimates = global_guide(data)
@@ -221,10 +216,6 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
                               'mu2': [locs[1]], 
                               'scale1': [scales],
                               'scale2': [scales]})
-    
-    #print('weights: ' + str(weights))
-    #print('means: ' + str(locs))
-    #print('var: ' + str(scales))
 
     # create plot of the loss
     plot_loss(losses, gRNA, output_dir)
@@ -233,8 +224,7 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
     X = np.arange(1, max(selected_guide.toarray()) + 1, 1)
     log_X = np.log10(X + 1)
     df = pd.DataFrame({'t': X, 'prob_normal_component': prob_normal_component(log_X, weights, locs, scales)})
-    threshold = df.loc[(df.prob_normal_component >= 0.5), 't'].min()
-    #print('t: ' + str(threshold))
+    threshold = df.loc[(df.prob_normal_component == True), 't'].min()
 
     # create plot of the mixture distribution
     plot_fitted_model(data, weights, locs, scales, np.log10(threshold+1), gRNA, output_dir)
@@ -244,9 +234,9 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
     return(perturbed_cells, threshold, losses[-1], estimates)
 
 
-def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_list = None, n_iter = 500, nonzero = False):
+def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_list = None, n_iter = 250, nonzero = False):
     '''
-    Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts
+    Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts similar to the approach used in Cell Ranger. Please note that due to differences in the model parameter estimation (variational inference here vs. EM algorithm in the sklearn.mixture.GaussianMixture used by Cell Ranger), the final results of our implementation and the Cell Ranger output can differ.  
     
     Args:
         input_file: (str) path to the stored anndata object with the gRNA counts
@@ -260,7 +250,7 @@ def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_lis
     Returns:
         None
     ''' 
-    print('Guide assignment according to cellranger tool')
+    print('Guide assignment using a Gaussian mixture model per batch')
     # Load gRNA counts data
     print('Load gRNA counts')
     adata_crispr = sc.read_h5ad(input_file)
@@ -288,14 +278,14 @@ def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_lis
             gRNA_list = gRNA_list[start_gRNA:(end_gRNA + 1)]
 
         # Fit Gaussian Mixture Model (GMM) for each gRNA
-        perturbations = pd.DataFrame({'cell': [], 'gRNA': [], 'target_gene': []})
+        perturbations = pd.DataFrame({'cell': [], 'gRNA': []})
         thresholds = pd.DataFrame({'gRNA': [], 'threshold': []})
         losses = pd.DataFrame({'gRNA': [], 'loss': []})
         estimates = pd.DataFrame({'gRNA': [], 'weight_Normal1': [], 'weight_Normal2': [], 
                                   'mu1': [], 'mu2': [], 'scale1': [], 'scale2': []})
 
         for gRNA in gRNA_list:
-            perturbed_cells, threshold, loss, map_estimates = fit_GMM(gRNA, adata_crispr, 
+            perturbed_cells, threshold, loss, map_estimates = fit_GMM(gRNA, adata_crispr_batch, 
                                                                       output_dir + 'batch' + str(batch) + '/', 
                                                                       2024, n_iter, nonzero)
             if len(perturbed_cells) != 0:
@@ -317,7 +307,7 @@ def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_lis
             b = pd.read_csv(output_dir + 'batch' + str(batch) + '/perturbations.csv')
             pert = pd.concat([pert, b])
 
-        pert.to_csv(output_dir + 'perturbations.csv')
+        pert.to_csv(output_dir + 'perturbations.csv', index = False)
     print('Done: outputs are saved in ' + output_dir)
        
     

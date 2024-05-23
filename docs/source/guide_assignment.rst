@@ -1,6 +1,8 @@
 Guide assignment
 ================
-This package contains implementations of 11 different guide assignment methods which we grouped into four main categories based on whether information is shared across gRNAs, cells or both. Details on all functions can be found in our manuscript (link will be added very soon).
+This package contains implementations of 11 different guide assignment methods which we grouped into four main categories based on whether information is shared across gRNAs, cells or both. Details on all functions can be found in our `preprint`_.
+
+.. _preprint: https://www.biorxiv.org/content/10.1101/2024.05.06.592692v1
 
 Independent
 -----------
