@@ -157,10 +157,6 @@ def fit_NegBinomial(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter, su
     batch_effects = pd.DataFrame({'gRNA': gRNA,
                                   'param': ['gamma_' + str(batch) for batch in batch_list],
                                   'value': map_estimates['gamma'].detach().numpy()})
-    beta0 = map_estimates["beta0"].item()
-    beta1 = map_estimates["beta1"].item()
-    pi = map_estimates["pi"].item()
-    theta = map_estimates["theta"].item()
     estimates = pd.concat([pd.DataFrame({'gRNA': gRNA, 
                                          'param': ['beta0', 'beta1', 'pi', 'theta'], 
                                          'value': [map_estimates["beta0"].item(), map_estimates["beta1"].item(),
@@ -185,10 +181,10 @@ def get_perturbed_cells(adata_crispr, estimates, gRNA):
     '''
     # Get data and confounders
     selected_gRNA = adata_crispr[:,[gRNA]]
-    data = pd.DataFrame({'gRNA_counts': selected_gRNA.X.toarray().reshape(-1), 
+    data = pd.DataFrame({'UMI_counts': selected_gRNA.X.toarray().reshape(-1), 
                          'batch': selected_gRNA.obs['batch'], 
                          'seq_depth': selected_gRNA.obs['total_counts']})
-    data = data[data['gRNA_counts'] != 0]
+    data = data[data['UMI_counts'] != 0]
     
     # get inferred parameters
     beta0 = estimates.loc[estimates['param'] == 'beta0', 'value'].item()
@@ -207,9 +203,9 @@ def get_perturbed_cells(adata_crispr, estimates, gRNA):
     data['sig1'] = data['mu1'] + (data['mu1']**2) / theta
     
     # get probabilities for the two mixture components
-    data['p0'] = nbinom.pmf(data['gRNA_counts'], (data['mu0']**2) / (data['sig0'] - data['mu0']), 
+    data['p0'] = nbinom.pmf(data['UMI_counts'], (data['mu0']**2) / (data['sig0'] - data['mu0']), 
                             data['mu0']/data['sig0']) * (1 - pi)
-    data['p1'] = nbinom.pmf(data['gRNA_counts'], (data['mu1']**2) / (data['sig1'] - data['mu1']), 
+    data['p1'] = nbinom.pmf(data['UMI_counts'], (data['mu1']**2) / (data['sig1'] - data['mu1']), 
                             data['mu1']/data['sig1']) * pi
     data['pert_probability'] = data['p1'] / (data['p0'] + data['p1'])
     data['perturbation'] =  np.where(data['pert_probability'] >= 0.8, 1, 0)
@@ -219,6 +215,7 @@ def get_perturbed_cells(adata_crispr, estimates, gRNA):
     perturbed_cells['gRNA'] = gRNA
     perturbed_cells.index.name = 'cell'
     perturbed_cells = perturbed_cells.reset_index()
+    perturbed_cells = perturbed_cells[['cell', 'gRNA', 'UMI_counts']]
     
     return perturbed_cells
 
@@ -332,11 +329,11 @@ def ga_negative_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = Non
         
     # Save data frames with the results
     if gRNA_step == None:
-        perturbations.to_csv(output_dir + 'perturbations.csv', index = False)
+        perturbations.to_csv(output_dir + 'assignments.csv', index = False)
         losses.to_csv(output_dir + 'gRNA_losses.csv', index = False)
         estimates.to_csv(output_dir + 'gRNA_estimates.csv', index = False)
     else:
-        perturbations.to_csv(output_dir + 'perturbations_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
+        perturbations.to_csv(output_dir + 'assignments_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
         losses.to_csv(output_dir + 'gRNA_losses_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
         estimates.to_csv(output_dir + 'gRNA_estimates_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
       

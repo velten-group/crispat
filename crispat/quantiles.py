@@ -35,7 +35,7 @@ def get_ratios(adata_crispr):
     return percent_df
 
 
-def ga_quantiles(input_file, thresholds, output_dir):
+def ga_quantiles(input_file, thresholds, output_dir, add_UMI_counts = True):
     '''
     Guide assignment in which the X% non-zero cells with highest ratios are assigned per gRNA
     
@@ -43,6 +43,7 @@ def ga_quantiles(input_file, thresholds, output_dir):
         input_file (str): path to the stored anndata object with the gRNA counts
         thresholds (list): list of quantile thresholds for which to return the assignment
         output_dir (str): directory in which to store the resulting assignment
+        add_UMI_counts: (bool) if true, UMI counts are added to the output. To improve run time, set it to False
     
     Returns:
         None
@@ -58,18 +59,29 @@ def ga_quantiles(input_file, thresholds, output_dir):
     
     # Remove cells with 0 gRNA counts
     adata_crispr.obs['total_counts'] = np.array(adata_crispr.X.sum(axis = 1)).flatten()
-    adata_crispr = adata_crispr[adata_crispr.obs['total_counts'] != 0].copy()
+    adata_crispr_norm = adata_crispr[adata_crispr.obs['total_counts'] != 0].copy()
  
     # Calculate ratios per cell
-    data = get_ratios(adata_crispr)
+    data = get_ratios(adata_crispr_norm)
         
     # Get the cells with highest ratios per gRNA
     print('Get cells with highest ratios per gRNA')
     data = data[data['percent_counts'] != 0].sort_values(by=['gRNA', 'percent_counts'], ascending=[True, False])
+
+    # Add the UMI counts 
+    if add_UMI_counts:
+        umi_counts = []
+        for _, row in data.iterrows():
+            # Get UMI counts for selected gRNA in selected cell
+            umi_count = adata_crispr[row['cell'], row['gRNA']].X.toarray().item()
+            umi_counts.append(umi_count)
+
+        data['UMI_counts'] = umi_counts
+
     for quantile in thresholds:
         perturbations = data.groupby('gRNA').apply(lambda x: x.head(int(quantile * len(x))))
         # Save the resulting dataframe
-        perturbations.to_csv(output_dir + 'perturbations_t' + str(quantile) + '.csv', index = False)
+        perturbations.to_csv(output_dir + 'assignments_t' + str(quantile) + '.csv', index = False)
       
     print('Done: outputs are saved in ' + output_dir)
     

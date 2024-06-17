@@ -204,7 +204,7 @@ def get_threshold(weights, alphas, betas):
     return threshold
 
 
-def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None):
+def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None, add_UMI_counts = True):
     '''
     Guide assignment in which a mixture model of 2-Beta distributions is fitted to the ratios of 
     the most abundant gRNAs per cell to determine a batch-specific threshold on the ratios 
@@ -214,6 +214,7 @@ def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None):
         output_dir (str): Directory in which to store the resulting assignment
         n_iter (int, optional): Number of steps for training the model (default is 500)
         batch_list (list): List of batches for which to fit the mixture model. If none (default), all available batches are used
+        add_UMI_counts: (bool) if true, UMI counts are added to the output. To improve run time, set it to False
 
     Returns:
         None
@@ -237,10 +238,10 @@ def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None):
         
     # Remove cells with 0 gRNA counts
     adata_crispr.obs['total_counts'] = np.array(adata_crispr.X.sum(axis = 1)).flatten()
-    adata_crispr = adata_crispr[adata_crispr.obs['total_counts'] != 0].copy()
+    adata_crispr_norm = adata_crispr[adata_crispr.obs['total_counts'] != 0].copy()
     
     # Calculate ratios per cell
-    data = get_ratios(adata_crispr)
+    data = get_ratios(adata_crispr_norm)
     
     perturbations = pd.DataFrame()
     thresholds = pd.DataFrame()
@@ -275,8 +276,18 @@ def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None):
         thresholds = pd.concat([thresholds, pd.DataFrame({'batch': [batch], 'threshold': [threshold]})])
         estimates = pd.concat([estimates, map_estimates])
 
+    # Add the UMI counts 
+    if add_UMI_counts:
+        umi_counts = []
+        for _, row in perturbations.iterrows():
+            # Get UMI counts for selected gRNA in selected cell
+            umi_count = adata_crispr[row['cell'], row['gRNA']].X.toarray().item()
+            umi_counts.append(umi_count)
+
+        perturbations['UMI_counts'] = umi_counts
+
     # Save data frames with the results
-    perturbations.to_csv(output_dir + 'perturbations.csv', index = False)
+    perturbations.to_csv(output_dir + 'assignments.csv', index = False)
     thresholds.to_csv(output_dir + 'batch_thresholds.csv', index = False)
     estimates.to_csv(output_dir + 'MAP_estimates.csv', index = False)
     

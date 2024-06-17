@@ -38,12 +38,14 @@ def ga_umi(input_file, thresholds, output_dir):
             # Get cells with UMI counts higher than the threshold for specified gRNA
             selected_guide = adata_crispr[:,[gRNA]].X
             perturbed_cells = adata_crispr.obs_names[selected_guide.toarray().reshape(-1) >= threshold].tolist()
+            UMI_counts = adata_crispr[selected_guide.toarray().reshape(-1) >= threshold, [gRNA]].X.toarray().reshape(-1)
+           
             if len(perturbed_cells) != 0:
-                df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA})
+                df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA, 'UMI_counts': UMI_counts})
                 perturbations = pd.concat([perturbations, df], ignore_index = True)
 
         # Save data frames with the results
-        perturbations.to_csv(output_dir + 'perturbations_t' + str(threshold) + '.csv', index = False)
+        perturbations.to_csv(output_dir + 'assignments_t' + str(threshold) + '.csv', index = False)
         
     print('Done: outputs are saved in ' + output_dir)
     

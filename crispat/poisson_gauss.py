@@ -314,7 +314,9 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
         time.sleep(0.01)
         perturbed_cells, threshold, loss, map_estimates = fit_PGMM(gRNA, adata_crispr, output_dir, 2024, n_iter)
         if len(perturbed_cells) != 0:
-            df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA})
+            # get UMI_counts of assigned cells
+            UMI_counts = adata_crispr[perturbed_cells, [gRNA]].X.toarray().reshape(-1)
+            df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA, 'UMI_counts': UMI_counts})
             perturbations = pd.concat([perturbations, df], ignore_index = True)
             thresholds = pd.concat([thresholds, pd.DataFrame({'gRNA': [gRNA], 'threshold': [threshold]})])
             losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
@@ -322,12 +324,12 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
 
     # Save data frames with the results
     if step == None:
-        perturbations.to_csv(output_dir + 'perturbations.csv', index = False)
+        perturbations.to_csv(output_dir + 'assignments.csv', index = False)
         thresholds.to_csv(output_dir + 'gRNA_thresholds.csv', index = False)
         losses.to_csv(output_dir + 'gRNA_losses.csv', index = False)
         estimates.to_csv(output_dir + 'gRNA_estimates.csv', index = False)
     else:
-        perturbations.to_csv(output_dir + 'perturbations_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
+        perturbations.to_csv(output_dir + 'assignments_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
         thresholds.to_csv(output_dir + 'gRNA_thresholds_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
         losses.to_csv(output_dir + 'gRNA_losses_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
         estimates.to_csv(output_dir + 'gRNA_estimates_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)

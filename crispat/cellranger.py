@@ -289,14 +289,16 @@ def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_lis
                                                                       output_dir + 'batch' + str(batch) + '/', 
                                                                       2024, n_iter, nonzero)
             if len(perturbed_cells) != 0:
-                df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA})
+                # get UMI_counts of assigned cells
+                UMI_counts = adata_crispr_batch[perturbed_cells, [gRNA]].X.toarray().reshape(-1)
+                df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA, 'UMI_counts': UMI_counts})
                 perturbations = pd.concat([perturbations, df], ignore_index = True)
                 thresholds = pd.concat([thresholds, pd.DataFrame({'gRNA': [gRNA], 'threshold': [threshold]})])
                 losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
                 estimates = pd.concat([estimates, map_estimates])
 
         # Save data frame with the perturbations assigned to each cell
-        perturbations.to_csv(output_dir + 'batch' + str(batch) + '/perturbations.csv', index = False)
+        perturbations.to_csv(output_dir + 'batch' + str(batch) + '/assignments.csv', index = False)
         thresholds.to_csv(output_dir + 'batch' + str(batch) + '/gRNA_thresholds.csv', index = False)
         losses.to_csv(output_dir + 'batch' + str(batch) + '/gRNA_losses.csv', index = False)
 
@@ -304,10 +306,10 @@ def ga_cellranger(input_file, output_dir, start_gRNA = 0, step = None, batch_lis
     if step == None:
         pert = pd.DataFrame()
         for batch in batch_list:
-            b = pd.read_csv(output_dir + 'batch' + str(batch) + '/perturbations.csv')
+            b = pd.read_csv(output_dir + 'batch' + str(batch) + '/assignments.csv')
             pert = pd.concat([pert, b])
 
-        pert.to_csv(output_dir + 'perturbations.csv', index = False)
+        pert.to_csv(output_dir + 'assignments.csv', index = False)
     print('Done: outputs are saved in ' + output_dir)
        
     

@@ -186,10 +186,10 @@ def get_perturbed_cells(adata_crispr, estimates, gRNA):
     '''
     # Get data and confounders
     selected_gRNA = adata_crispr[:,[gRNA]]
-    data = pd.DataFrame({'gRNA_counts': selected_gRNA.X.toarray().reshape(-1), 
+    data = pd.DataFrame({'UMI_counts': selected_gRNA.X.toarray().reshape(-1), 
                          'batch': selected_gRNA.obs['batch'], 
                          'seq_depth': selected_gRNA.obs['total_counts']})
-    data = data[data['gRNA_counts'] != 0]
+    data = data[data['UMI_counts'] != 0]
     
     # get inferred parameters
     beta0 = estimates.loc[estimates['param'] == 'beta0', 'value'].item()
@@ -203,8 +203,8 @@ def get_perturbed_cells(adata_crispr, estimates, gRNA):
     data['mu1'] = np.exp(beta0 + beta1 + gamma_cells + np.log(data['seq_depth']))
     
     # get probabilities for the two mixture components
-    data['p0'] = poisson.pmf(data['gRNA_counts'], data['mu0']) * (1 - pi)
-    data['p1'] = poisson.pmf(data['gRNA_counts'], data['mu1']) * pi
+    data['p0'] = poisson.pmf(data['UMI_counts'], data['mu0']) * (1 - pi)
+    data['p1'] = poisson.pmf(data['UMI_counts'], data['mu1']) * pi
     data['pert_probability'] = data['p1'] / (data['p0'] + data['p1'])
     data['perturbation'] =  np.where(data['pert_probability'] >= 0.8, 1, 0)
     
@@ -213,7 +213,8 @@ def get_perturbed_cells(adata_crispr, estimates, gRNA):
     perturbed_cells['gRNA'] = gRNA
     perturbed_cells.index.name = 'cell'
     perturbed_cells = perturbed_cells.reset_index()
-    
+    perturbed_cells = perturbed_cells[['cell', 'gRNA', 'UMI_counts']]
+
     return perturbed_cells
 
 
@@ -326,11 +327,11 @@ def ga_poisson(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_l
         
     # Save data frames with the results
     if gRNA_step == None:
-        perturbations.to_csv(output_dir + 'perturbations.csv', index = False)
+        perturbations.to_csv(output_dir + 'assignments.csv', index = False)
         losses.to_csv(output_dir + 'gRNA_losses.csv', index = False)
         estimates.to_csv(output_dir + 'gRNA_estimates.csv', index = False)
     else:
-        perturbations.to_csv(output_dir + 'perturbations_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
+        perturbations.to_csv(output_dir + 'assignments_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
         losses.to_csv(output_dir + 'gRNA_losses_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
         estimates.to_csv(output_dir + 'gRNA_estimates_'+str(start_gRNA)+'-'+str(end_gRNA)+'.csv', index = False)
     

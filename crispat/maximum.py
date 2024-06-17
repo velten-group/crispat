@@ -47,7 +47,7 @@ def ga_max(input_file, output_dir):
     max_df = max_df[max_df['n_max_gRNAs'] == 1]
     
     # Save data frames with the results
-    max_df.to_csv(output_dir + 'perturbations.csv', index = False)
+    max_df[['cell', 'gRNA', 'UMI_counts']].to_csv(output_dir + 'assignments.csv', index = False)
     print('Done: outputs are saved in ' + output_dir)
     
     

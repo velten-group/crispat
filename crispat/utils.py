@@ -49,9 +49,9 @@ def load_assignments(gc_dict, data_dir):
         method_dir, t = method_params
 
         if t == None: 
-            assignment = pd.read_csv(data_dir + method_dir + '/perturbations.csv')[['cell', 'gRNA']]
+            assignment = pd.read_csv(data_dir + method_dir + '/assignments.csv')[['cell', 'gRNA']]
         else:
-            assignment = pd.read_csv(data_dir + method_dir + '/perturbations_t' + str(t) + '.csv')[['cell', 'gRNA']]
+            assignment = pd.read_csv(data_dir + method_dir + '/assignments_t' + str(t) + '.csv')[['cell', 'gRNA']]
         assignment['method'] = name
 
         # Combine with all others
