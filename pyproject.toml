@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "crispat"
-version = "0.9.2"
+version = "0.9.3"
 authors = [
   {name="Jana M. Braunger", email="jana.braunger@cos.uni-heidelberg.de" },
 ]
