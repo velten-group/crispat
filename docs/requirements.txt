@@ -10,4 +10,4 @@ scipy==1.9.3
 seaborn==0.12.2
 setuptools==69.5.1
 torch==2.0.1
-tqdm==4.65.0
+tqdm==4.66.3
