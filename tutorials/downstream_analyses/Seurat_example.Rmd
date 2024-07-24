@@ -1,0 +1,54 @@
+---
+title: "Seurat_example"
+output: BiocStyle::html_document
+date: "22/07/2024"
+author: "Jana Braunger"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+BiocStyle::html_document 
+
+data_dir = '../../example_data/'
+```
+
+```{r load_libraries, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(Seurat)
+```
+
+# Differential expression analysis with Seurat
+
+## Load Seurat object of the processed CRISPR screen data
+
+```{r}
+seurat_object <- readRDS(paste0(data_dir, 'Schraivogel/Seurat_object.rds'))
+```
+
+## Add crispat assignment
+```{r}
+# Load assignment and filter for cells with single gRNA (e.g. assignment from Gaussian mixture model)
+assignment <- read.csv(paste0(data_dir, 'guide_assignments/gauss/assignments.csv')) %>%
+  group_by(cell) %>% 
+  mutate(n_grnas = n()) %>%
+  filter(n_grnas == 1)
+
+# Add target gene information to the assignment
+assignment <- assignment %>%
+  extract(gRNA, into = "target", regex = "CROPseq_dCas9_DS_([^_]+)", remove = FALSE, convert = TRUE) %>%
+  column_to_rownames(var = "cell")
+
+# Add the target gene as meta data to the Seurat object
+seurat_object@meta.data <- merge(seurat_object@meta.data, assignment, by = "row.names", all.x = TRUE) %>%
+  column_to_rownames(var = "Row.names")
+```
+
+
+## Run differential expression test
+The Seurat function "FindMarkers" can be used to test for differential expression between perturbed and control cells. For demonstration purposes, we show this here only for one perturbation ("CCNE2"). More details about this function can be found [here](https://satijalab.org/seurat/reference/findmarkers).
+```{r}
+perturbation <- "CCNE2"
+de <- FindMarkers(seurat_object, group.by = "target", 
+                  ident.1 = perturbation, 
+                  ident.2 = "non-targeting")
+```

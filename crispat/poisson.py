@@ -11,7 +11,8 @@ from scipy.sparse import csr_matrix
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import time
-from concurrent.futures import ProcessPoolExecutor
+from dask.distributed import Client, LocalCluster
+import dask.bag as db
 from functools import partial
 
 import pyro
@@ -189,7 +190,7 @@ def get_perturbed_cells(adata_crispr, estimates, gRNA):
     data = pd.DataFrame({'UMI_counts': selected_gRNA.X.toarray().reshape(-1), 
                          'batch': selected_gRNA.obs['batch'], 
                          'seq_depth': selected_gRNA.obs['total_counts']})
-    data = data[data['UMI_counts'] != 0]
+    data = data[data['UMI_counts'] != 0].copy()
     
     # get inferred parameters
     beta0 = estimates.loc[estimates['param'] == 'beta0', 'value'].item()
@@ -240,7 +241,7 @@ def parallel_assignment(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter
             
         
 def ga_poisson(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_list = None, n_iter = 2500, 
-               subsample_size = 15000, parallelize = True, n_processes = None):
+               subsample_size = 15000, parallelize = True, n_processes = None, mem_limit = '10GB'):
     '''
     Guide assignment with a Poisson mixture model based on SCEPTRE approach
     
@@ -249,20 +250,21 @@ def ga_poisson(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_l
         output_dir (str): directory in which to store the resulting assignment
         start_gRNA (int, optional): index of the start gRNA when parallelizing assignment for gRNA sets
         gRNA_step (int, optional): number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)
-        batch_list (list, opitonal): list of batches for which to fit the mixture model. If none (default), all available batches are used. 
+        batch_list (list, optional): list of batches for which to fit the mixture model. If none (default), all available batches are used. 
         n_iter (int, optional): number of steps for training the model
         subsample_size (int, optional): number of cells to use for each step
         parallelize (bool, optional): whether to parallelize the computation over the gRNA (default = True)
         n_processes (int, optional): specifies number of processes to use for parallelization if parallelize = True. If set to None (default), all available CPUs will be used (if this number is not higher than the number of gRNAs). 
-        
+        mem_limit (str, optional): set memory limit for the dask cluster (default: 10GB)
+
     Returns:
         None
     '''   
     print('Guide assignment based on SCEPTRE Poisson mixture model')
     # If output_dir doesn't exist, the output folders are created
     if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-        os.makedirs(output_dir + "loss_plots/")
+        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(output_dir + "loss_plots/", exist_ok=True)
         print("The output directory " + output_dir +  " was created")
 
     # Load gRNA counts data
@@ -302,13 +304,19 @@ def ga_poisson(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_l
         partial_function = partial(parallel_assignment, adata_crispr = adata_crispr, batch_list = batch_list, 
                                    output_dir = output_dir, seed = 2024, n_iter = n_iter, subsample_size = subsample_size)
         
+        # start a local Dask cluster
+        cluster = LocalCluster(n_workers = n_processes, threads_per_worker = 1, memory_limit = mem_limit)
+        client = Client(cluster, heartbeat_interval='5s', timeout='30s')
+
         # run in parallel over gRNAs
-        with ProcessPoolExecutor(max_workers=n_processes) as executor:
-            results = list(executor.map(partial_function, gRNA_list))
+        bag = db.from_sequence(gRNA_list)
+        results = bag.map(partial_function).compute()
+        client.close()
+        cluster.close()
         
         # combine the results per gRNA
         for gRNA, loss, map_estimates, perturbed_cells in results:
-            losses = pd.concat([losses, pd.DataFrame({'gRNA': ['gRNA'], 'loss': [loss]})])
+            losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
             estimates = pd.concat([estimates, map_estimates])
             perturbations = pd.concat([perturbations, perturbed_cells])
     

@@ -8,7 +8,7 @@ As demonstrated on *low MOI CRISPRi* screens in our preprint [Braunger et al, 20
 Methods include simple approaches such as a threshold on the UMI counts or assigning the gRNA with highest counts per cell, as well as more advanced models taking into account the variability per cell, the variability per gRNA, or both. Methods are grouped into 4 main categories based on the information that is used during assignment:
 - independent (`ga_umi`)
 - across gRNAs (`ga_max`, `ga_ratio`)
-- across cells (`ga_cellranger`, `ga_poisson_gauss`)
+- across cells (`ga_gauss`, `ga_poisson_gauss`)
 - across gRNAs and across cells (`ga_2beta`, `ga_3beta`, `ga_poisson`, `ga_negative_binomial`, `ga_binomial`, `ga_quantiles`)
 
 For details on the individual methods please refer to our our preprint [Braunger et al, 2024](https://www.biorxiv.org/content/10.1101/2024.05.06.592692v1).

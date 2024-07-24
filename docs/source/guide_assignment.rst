@@ -6,7 +6,7 @@ This package contains implementations of 11 different guide assignment methods w
 
 Independent
 -----------
-**UMI threshold (UMI_t):** The simplest approach is to not share any information across the gRNA-cell matrix and check for each value separately whether it is at least as high than a fixed threshold. To find a suitable thresholds, a list of thresholds can be passed as one argument of the function
+**UMI threshold (UMI_t):** The simplest approach is to not share any information across the gRNA-cell matrix and check for each value separately whether it is at least as high than a fixed threshold. If a cell has at least as many counts for a gRNA as the user-defined threshold, it is assigned to this gRNA. To find a suitable threshold, a list of thresholds can be passed as one argument of the function and the function creates an assignment output file for each threshold in the specified output_dir. 
 
 .. autofunction:: crispat.ga_umi
 

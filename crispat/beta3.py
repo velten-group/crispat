@@ -198,7 +198,7 @@ def get_threshold(weights, alphas, betas):
     Returns:
         Threshold
     '''
-    X = np.arange(0.01, 1, 0.01)
+    X = np.arange(0.5, 1, 0.01)
     Y1 = weights[0] * stats.beta.pdf(X, alphas[0], betas[0]) 
     Y2 = weights[1] * stats.beta.pdf(X, alphas[1], betas[1]) 
     Y3 = weights[2] * stats.beta.pdf(X, alphas[2], betas[2]) 

@@ -49,7 +49,7 @@ def ga_ratio(input_file, thresholds, output_dir, add_UMI_counts = True):
     percent_df = pd.melt(percent_df, id_vars=['cell'], var_name='gRNA', value_name='percent_counts')
 
     # Get maximum per cell
-    max_df = percent_df.groupby('cell').agg({'percent_counts': max})
+    max_df = percent_df.groupby('cell').agg({'percent_counts': 'max'})
     #max_df.to_csv(output_dir + 'max_df.csv')
     max_df = max_df.reset_index() 
     max_df = max_df.merge(percent_df, on = ['cell', 'percent_counts'])

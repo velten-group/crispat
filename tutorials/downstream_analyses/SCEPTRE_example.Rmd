@@ -1,0 +1,126 @@
+---
+title: "SCEPTRE example"
+output: BiocStyle::html_document
+date: "22/07/2024"
+author: "Jana Braunger"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+BiocStyle::html_document 
+data_dir = '../../example_data/'
+```
+
+# Using crispat assignment in SCEPTRE
+Since SCEPTRE is tailored for the analysis of single-cell CRISPR screens, we recommend using SCEPTRE for comparing the assignment effects on downstream analysis. In this tutorial, we show how an assignment obtained by crispat can be used in the SCEPTRE pipeline. For more details on how to create a SCEPTRE object, as well as the full analysis pipeline and settings we refer to the [SCEPTRE handbook](https://timothy-barry.github.io/sceptre-book/).
+ 
+```{r load_libraries, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(sceptre)
+library(Seurat)
+library(Matrix)
+```
+
+
+## Load SCEPTRE object
+For demonstration purposes, we start this tutorial with an already created SCEPTRE object with set analysis parameters. For details on how to get your own data into a SCEPTRE object, check out the [SCEPTRE handbook](https://timothy-barry.github.io/sceptre-book/). The analysis scripts used for the analysis shown in our paper can be found [here](https://github.com/velten-group/crispat_analysis).
+```{r}
+sceptre_object <- readRDS(paste0(data_dir, 'sceptre_output/sceptre_object.rds'))
+```
+
+
+## Replace guide assignment
+Instead of running the guide assignment step with SCEPTRE, we input an assignment obtained by crispat e.g. the one with a Gaussian mixture model here: 
+```{r}
+# the following helper function is a slightly modified version of the original SCETPRE function 
+# (modified such that it doesn't have to use a C++ function but computes the grnas_per_cell based on the perturbation_df)
+process_initial_assignment_list <- function(initial_assignment_list, grna_target_data_frame, n_cells, low_moi, maximum_assignment, perturbation_df) {
+  # 1. compute the vector of grnas per cell
+  cell_indices <- data.frame('cell_index' = seq(n_cells))
+  perturbations <- perturbation_df %>% 
+    subset(select = c('cell_index', 'gRNA')) %>% 
+    distinct() %>% 
+    group_by(cell_index) %>% 
+    summarise('n_perturbations' = n()) %>%
+    right_join(cell_indices) %>% 
+    mutate(n_perturbations = ifelse(is.na(n_perturbations), 0, n_perturbations)) %>%
+    arrange(cell_index)
+  grnas_per_cell <- perturbations$n_perturbations
+  
+  # 2. determine the cells that contain multiple grnas (if in low MOI and not using maximum_assignment)
+  if (low_moi && !maximum_assignment) {
+    cells_w_multiple_grnas <- which(grnas_per_cell >= 2L)
+  } else {
+    cells_w_multiple_grnas <- integer()
+  }
+  # 3. pool together targeting gRNAs via the or operation
+  targeting_grna_group_data_table <- grna_target_data_frame |>
+    dplyr::filter(grna_group != "non-targeting") |> data.table::as.data.table()
+  targeting_grna_groups <- targeting_grna_group_data_table$grna_group |> unique()
+  grna_group_idxs <- lapply(targeting_grna_groups, function(targeting_grna_group) {
+    curr_grna_ids <- targeting_grna_group_data_table[
+      targeting_grna_group_data_table$grna_group == targeting_grna_group,]$grna_id
+    initial_assignment_list[curr_grna_ids] |> unlist() |> unique()
+  }) |> stats::setNames(targeting_grna_groups)
+  # 4. obtain the individual non-targeting grna idxs
+  nontargeting_grna_ids <- grna_target_data_frame |>
+    dplyr::filter(grna_group == "non-targeting") |> dplyr::pull(grna_id)
+  indiv_nt_grna_idxs <- initial_assignment_list[nontargeting_grna_ids]
+  # 5. construct the grna_group_idxs list
+  grna_assignments_raw <- list(grna_group_idxs = grna_group_idxs,
+                               indiv_nt_grna_idxs = indiv_nt_grna_idxs)
+  # 6. compute the number of targeting grna groups per cell
+  out <- list(grna_assignments_raw = grna_assignments_raw,
+              grnas_per_cell = grnas_per_cell,
+              cells_w_multiple_grnas = cells_w_multiple_grnas)
+  return(out)
+}
+
+```
+
+
+```{r}
+# Read in crispat assignment and filter for cells with single gRNA (relevant for low MOI only)
+assignment <- read.csv(paste0(data_dir, 'guide_assignments/gauss/assignments.csv')) %>% 
+  group_by(cell) %>% 
+  mutate(n_grnas = n()) %>% 
+  filter(n_grnas == 1)
+
+# Since SCEPTRE numbers the cells instead of using their names, we have to add indices 
+# to the assignments (numbering according to the order in the gRNA count matrix)
+grna_counts <- read.csv(paste0(data_dir, 'Schraivogel/grna_counts.csv')) 
+cells <- gsub("\\.", "-", colnames(grna_counts)[-1])
+cell_indices <- data.frame(cell_index = seq(1, length(cells)),
+                           cell = cells)
+assignment <- assignment %>%
+  inner_join(cell_indices)
+
+# convert df to a list
+assignment_list <- split(assignment$cell_index, assignment$gRNA)
+# add gRNAs without any assigned cells to the list
+null_grnas <- filter(grna_counts, ! gRNA %in% assignment$gRNA)$gRNA
+assignment_list <- c(assignment_list, 
+               setNames(lapply(rep(list(integer(0)), length(null_grnas)), function(x) x), null_grnas))
+
+# get processed assignment outputs
+processed_assignment_out <- process_initial_assignment_list(initial_assignment_list = assignment_list,
+                                                            grna_target_data_frame = sceptre_object@grna_target_data_frame,
+                                                            n_cells = ncol(sceptre_object@grna_matrix[[1]]), 
+                                                            low_moi = sceptre_object@low_moi,
+                                                            maximum_assignment = FALSE, 
+                                                            perturbation_df = assignment)
+
+# write guide assignment results to the sceptre object
+sceptre_object@grna_assignments_raw <- processed_assignment_out$grna_assignments_raw
+sceptre_object@grnas_per_cell <- as.integer(processed_assignment_out$grnas_per_cell)
+sceptre_object@cells_w_zero_or_twoplus_grnas <- processed_assignment_out$cells_w_multiple_grnas
+sceptre_object@initial_grna_assignment_list <- assignment_list 
+sceptre_object@last_function_called <- "assign_grnas"
+sceptre_object@functs_called["assign_grnas"] <- TRUE
+sceptre_object@grna_assignment_method = "own_assignment"
+sceptre_object@cells_in_use <- sort(unique(assignment$cell_index))
+```
+
+
+## SCEPTRE analysis
+After adding the crispat assignment to your SCEPTRE object, you can follow the remaining SCEPTRE pipeline including quality control, calibration, power check and discovery analysis setting various input parameters as needed for your data (see the [SCEPTRE handbook](https://timothy-barry.github.io/sceptre-book/)). 
