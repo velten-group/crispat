@@ -8,6 +8,6 @@ pyro_ppl==1.8.6
 scanpy==1.9.3
 scipy==1.9.3
 seaborn==0.12.2
-setuptools==69.5.1
+setuptools==70.0.0
 torch==2.0.1
 tqdm==4.66.3

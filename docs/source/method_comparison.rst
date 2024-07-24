@@ -13,14 +13,17 @@ In case some of the methods were manually run on distinct gRNA subsets, we provi
     
 Number of assigned cells and intersection
 -----------------------------------------
-To compare the assignments with each other, crispat contains the function `plot_intersection_heatmap` which creates two figures next to each other. On the left, a heatmap of the pairwise overlap of assignments divided by the number of assignments from the method shown in the row is plotted. On the right, the number of cells with single assignments is shown and the y-axis of both plots is sorted according to an increasing number of assigned cells.
+To plot the number of total assigned cells, as well as the number of uniquely assigned cells per method, crispat contains the function `plot_n_assigned_cells`. To compare how similar various assignments are to each other, crispat also includes a function (`plot_intersection_heatmap`) which creates  a heatmap of the pairwise Jaccard index of uniquely assigned cells per method. 
     
+.. autofunction:: crispat.plot_n_assigned_cells
+    :noindex:
+
 .. autofunction:: crispat.plot_intersection_heatmap
     :noindex:
 
 Effects on downstream analysis
 ------------------------------
-To investigate the consequences of the assignment differences for discovery analysis, the assignments from crispat can serve as input to different differential expression tests. For the analysis shown in our paper, we use the crispat output as an input for the R package `SCEPTRE`_, which is tailored to single-cell CRISPR screen analysis and combines multiple analyses and control checks in a statistical rigorous fashion. First, SCEPTRE calculates the log2 fold changes and p-values for the target genes (power check). Next, it calculates the number of false discoveries which are genes that are significantly differentially expressed comparing the cells of one non-targeting gRNA against all other non-targeting control cells (calibration). And finally, it calculates the differentially expressed genes for each perturbation (discovery analysis). In our github `repository`_, we provide a tutorial on how the assignments from crispat can be used as an inut for SCEPTRE. 
+To investigate the consequences of the assignment differences for discovery analysis, the assignments from crispat can serve as input to different differential expression tests. For the analysis shown in our paper, we use the crispat output as an input for the R package `SCEPTRE`_, which is tailored to single-cell CRISPR screen analysis and combines multiple analyses and control checks in a statistical rigorous fashion. First, SCEPTRE calculates the log2 fold changes and p-values for the target genes (power check). Next, it calculates the number of false discoveries which are genes that are significantly differentially expressed comparing the cells of one non-targeting gRNA against all other non-targeting control cells (calibration). And finally, it calculates the differentially expressed genes for each perturbation (discovery analysis). However, it is also possible to input the assignments obtained by crispat into other tools for differential expression testing such as scanpy or Seurat. Therefore, we provide tutorials on how to do downstream analysis with SCEPTRE, scanpy and Seurat in our github `repository`_. 
 
 .. _SCEPTRE: https://timothy-barry.github.io/sceptre-book/sceptre.html
-.. _repository: https://github.com/velten-group/crispat/blob/main/tutorials/downstream_analyses/SCEPTRE_discovery.R
+.. _repository: https://github.com/velten-group/crispat/blob/main/tutorials/downstream_analyses/

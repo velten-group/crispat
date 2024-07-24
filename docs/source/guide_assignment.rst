@@ -30,9 +30,9 @@ Across cells
 
 .. autofunction:: crispat.ga_poisson_gauss
 
-**Gaussian-Gaussian mixture model (Cell Ranger):** For every gRNA, this method fits a Gaussian-Gaussian mixture model on the log10-transformed UMI counts of this gRNA with a pseudocount of 1 over all cells in a batch. 
+**Gaussian-Gaussian mixture model (Gauss):** For every gRNA, this method fits a Gaussian-Gaussian mixture model on the log10-transformed UMI counts of this gRNA with a pseudocount of 1 over all cells in a batch. 
 
-.. autofunction:: crispat.ga_cellranger
+.. autofunction:: crispat.ga_gauss
 
 
 Across gRNAs and cells
