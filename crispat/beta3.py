@@ -265,7 +265,7 @@ def ga_3beta(input_file, output_dir, n_iter = 500, batch_list = None, add_UMI_co
         batch_data.loc[batch_data['percent_counts'] < 0.0001, 'percent_counts'] = 0.0001
 
         # Get maximum proportion per cell
-        max_df = batch_data.groupby('cell').agg({'percent_counts': max})
+        max_df = batch_data.groupby('cell').agg({'percent_counts': "max"})
         
         # Fit 3-Beta Mixture Model
         map_estimates, threshold = fit_betaMM(torch.tensor(list(max_df['percent_counts'])), 

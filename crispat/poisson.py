@@ -36,8 +36,8 @@ def model(data, n_batches):
     pi = pyro.sample("pi", dist.Beta(1.0, 10.0))
     
     # Get data and confounders
-    batch = torch.tensor(data.obs['batch'])
-    seq_depth = torch.tensor(data.obs['total_counts'])
+    batch = torch.tensor(data.obs['batch'].iloc[:].values)
+    seq_depth = torch.tensor(data.obs['total_counts'].iloc[:].values)
     obs = torch.tensor(data.X.toarray()).reshape(-1)
 
     with pyro.plate("cells", len(data)):
