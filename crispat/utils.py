@@ -146,6 +146,8 @@ def plot_n_assigned_cells(perturbations, colors = None):
     n_single_assignments['group'] = 'Uniquely assigned cells'
 
     combined_df = pd.concat([n_total_assignments, n_single_assignments])
+    combined_df['group'] = pd.Categorical(combined_df['group'], categories=['Uniquely assigned cells', 'All assigned cells'], ordered=True)
+    combined_df.sort_values(by='group', inplace=True)
     
     if colors == None:
         colors = sns.color_palette("husl", n_colors = n_total_assignments.shape[0])

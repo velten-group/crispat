@@ -9,5 +9,5 @@ scanpy==1.9.3
 scipy==1.9.3
 seaborn==0.12.2
 setuptools==70.0.0
-torch==2.0.1
+torch==2.2.0
 tqdm==4.66.3
