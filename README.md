@@ -17,7 +17,7 @@ For details on the individual methods please refer to our our preprint [Braunger
 In addition to the guide assignment functions, the package includes some additional helper functions incl. for
 * data import (starting from either a csv file containing the gRNA count matrix or from the cellranger count output)
 * running and combining results from different guide assignment methods (`combine_assignments`, `load_assignments`)
-* visualization and comparison of different methods (`plot_intersection_heatmap`, tutorials)
+* visualization and comparison of different methods (`plot_intersection_heatmap`, `plot_n_assigned_cells`, tutorials)
 
 For details on the downstream analysis and comparison on different guide assignments obtained by crispat take a look at our tutorial page on [downstream analyses](tutorials/downstream_analyses).
 
