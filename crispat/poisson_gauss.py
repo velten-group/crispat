@@ -265,7 +265,7 @@ def fit_PGMM(gRNA, adata_crispr, output_dir, seed, n_iter):
     return(perturbed_cells, threshold, losses[-1], estimates)
 
 
-def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter = 500, n_counts = None):
+def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter = 500, n_counts = None, UMI_threshold = 0):
     '''
     Guide assignment in which a Poisson-Gaussian mixture model is fitted to the non-zero log-transformed UMI counts
     
@@ -276,6 +276,7 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
         step (int, optional): number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)
         n_iter (int, optional): number of steps for training the model
         n_counts (int, optional): subsample the gRNA counts per cell to a total of n_counts. If None (default), the UMI count matrix is used without any downsampling.
+        UMI_threshold (int, optional): Additional UMI threshold for assigned cells which is applied after creating the initial assignment to remove cells with fewer UMI counts than this threshold (default: no additional UMI threshold)
         
     Returns:
         None
@@ -321,7 +322,10 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
             thresholds = pd.concat([thresholds, pd.DataFrame({'gRNA': [gRNA], 'threshold': [threshold]})])
             losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
             estimates = pd.concat([estimates, map_estimates])
-
+    
+    # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
+    perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
+    
     # Save data frames with the results
     if step == None:
         perturbations.to_csv(output_dir + 'assignments.csv', index = False)

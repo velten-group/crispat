@@ -236,7 +236,7 @@ def parallel_assignment(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter
     return gRNA, loss, map_estimates, perturbed_cells
 
 
-def ga_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_list = None, 
+def ga_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_list = None, UMI_threshold = 0,
                 n_iter = 500, subsample_size = 15000, parallelize = True, n_processes = None, mem_limit = '10GB'):
     '''
     Guide assignment in which a binomial mixture model is fitted to the gRNA counts
@@ -247,6 +247,7 @@ def ga_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_
         start_gRNA (int, optional): index of the start gRNA when parallelizing assignment for gRNA sets
         gRNA_step (int, optional): number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)
         batch_list (list, optional): list of batches for which to fit the mixture model. If none (default), all available batches are used. 
+        UMI_threshold (int, optional): Additional UMI threshold for assigned cells which is applied after creating the initial assignment to remove cells with fewer UMI counts than this threshold (default: no additional UMI threshold)
         n_iter (int, optional): number of steps for training the model
         subsample_size (int, optional): number of cells to use for each step
         parallelize (bool, optional): whether to parallelize the computation over the gRNA (default = True)
@@ -329,6 +330,9 @@ def ga_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_
             # get the perturbed cells
             perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
             perturbations = pd.concat([perturbations, perturbed_cells])
+            
+    # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
+    perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
         
     # Save data frames with the results
     if gRNA_step == None:

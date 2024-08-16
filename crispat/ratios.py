@@ -11,7 +11,7 @@ import time
 from itertools import chain
 
 
-def ga_ratio(input_file, thresholds, output_dir, add_UMI_counts = True):
+def ga_ratio(input_file, thresholds, output_dir, add_UMI_counts = True, UMI_threshold = 0):
     '''
     Guide assignment in which the most abundant gRNA per cell is assigned if it comprises 
     more than X% of the total counts in a cell
@@ -21,6 +21,7 @@ def ga_ratio(input_file, thresholds, output_dir, add_UMI_counts = True):
         thresholds: (list) list of ratio thresholds to use (generates one output file per ratio)
         output_dir: (str) directory in which to store the resulting assignment
         add_UMI_counts: (bool) if true, UMI counts are added to the output. To improve run time, set it to False
+        UMI_threshold (int, optional): Additional UMI threshold for assigned cells which is applied after creating the initial assignment to remove cells with fewer UMI counts than this threshold (default: no additional UMI threshold)
     
     Returns:
         None
@@ -63,6 +64,9 @@ def ga_ratio(input_file, thresholds, output_dir, add_UMI_counts = True):
             umi_counts.append(umi_count)
 
         max_df['UMI_counts'] = umi_counts
+        # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
+        max_df = max_df[max_df['UMI_counts'] >= UMI_threshold]
+     
 
 
     # Save the results

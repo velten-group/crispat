@@ -204,7 +204,7 @@ def get_threshold(weights, alphas, betas):
     return threshold
 
 
-def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None, add_UMI_counts = True):
+def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None, add_UMI_counts = True, UMI_threshold = 0):
     '''
     Guide assignment in which a mixture model of 2-Beta distributions is fitted to the ratios of 
     the most abundant gRNAs per cell to determine a batch-specific threshold on the ratios 
@@ -213,8 +213,9 @@ def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None, add_UMI_co
         input_file (str): Path to the stored anndata object with the gRNA counts
         output_dir (str): Directory in which to store the resulting assignment
         n_iter (int, optional): Number of steps for training the model (default is 500)
-        batch_list (list): List of batches for which to fit the mixture model. If none (default), all available batches are used
-        add_UMI_counts: (bool) if true, UMI counts are added to the output. To improve run time, set it to False
+        batch_list (list, opitional): List of batches for which to fit the mixture model. If none (default), all available batches are used
+        add_UMI_counts (bool, optional): if true, UMI counts are added to the output. To improve run time, set it to False
+        UMI_threshold (int, optional): Additional UMI threshold for assigned cells which is applied after creating the initial assignment to remove cells with fewer UMI counts than this threshold (default: no additional UMI threshold)
 
     Returns:
         None
@@ -285,6 +286,7 @@ def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None, add_UMI_co
             umi_counts.append(umi_count)
 
         perturbations['UMI_counts'] = umi_counts
+        perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
 
     # Save data frames with the results
     perturbations.to_csv(output_dir + 'assignments.csv', index = False)

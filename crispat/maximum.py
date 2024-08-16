@@ -7,12 +7,13 @@ import anndata as ad
 from scipy.sparse import csr_matrix
 
 
-def ga_max(input_file, output_dir):
+def ga_max(input_file, output_dir, UMI_threshold = 0):
     '''
     Guide assignment in which the most abundant gRNA per cell is assigned 
     Args:
         input_file (str): path to the stored anndata object with the gRNA counts
         output_dir (str): directory in which to store the resulting assignment
+        UMI_threshold (int, optional): Additional UMI threshold for assigned cells which is applied after creating the initial assignment to remove cells with fewer UMI counts than this threshold (default: no additional UMI threshold)
     Returns:
         None
     '''
@@ -46,6 +47,9 @@ def ga_max(input_file, output_dir):
     max_df = max_df.merge(occurences, on = ['cell'])
     max_df = max_df[max_df['n_max_gRNAs'] == 1]
     
+    # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
+    max_df = max_df[max_df['UMI_counts'] >= UMI_threshold]
+     
     # Save data frames with the results
     max_df[['cell', 'gRNA', 'UMI_counts']].to_csv(output_dir + 'assignments.csv', index = False)
     print('Done: outputs are saved in ' + output_dir)

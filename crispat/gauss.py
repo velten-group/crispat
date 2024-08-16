@@ -268,7 +268,7 @@ def fit_em(gRNA, adata_crispr, nonzero):
     return perturbations
 
     
-def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = None, 
+def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = None, UMI_threshold = 0,
                   n_iter = 250, nonzero = False, inference = "vi"):
     '''
     Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts similar to the approach used in Cell Ranger. Two different inference methods are provided that can be selected with the 'inference' parameter.  
@@ -279,6 +279,7 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
         start_gRNA (int, optional): index of the start gRNA when parallelizing assignment for gRNA sets
         step (int, optional): number of gRNAs for which the assignment is done (if set to None, assignment for all gRNAs in the data)
         batch_list (list, optional): list of batches for which to fit the mixture model. If none, mixture model is fited for all batches
+        UMI_threshold (int, optional): Additional UMI threshold for assigned cells which is applied after creating the initial assignment to remove cells with fewer UMI counts than this threshold (default: no additional UMI threshold)
         n_iter (int, optional): number of steps for training the model
         nonzero (bool, optional): if True fit the mixture model on the nonzero values only, otherwise all values are used
         inference (str): choice of the inference method, either "vi" (default) for variational inference via pyro or "em" for using an EM algorithm
@@ -335,7 +336,10 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
             elif inference == "em":
                 df = fit_em(gRNA, adata_crispr_batch, nonzero)
                 perturbations = pd.concat([perturbations, df], ignore_index = True)
-
+        
+        # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
+        perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
+      
         # Save data frame with the perturbations assigned to each cell
         perturbations.to_csv(output_dir + 'batch' + str(batch) + '/assignments.csv', index = False)
         if inference == "vi":
