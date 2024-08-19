@@ -29,9 +29,9 @@ For details on the downstream analysis and comparison on different guide assignm
 To install crispat, run `pip install crispat` (see [PyPI page](https://pypi.org/project/crispat/)). To avoid dependency conflicts, we recommend to first create a new conda environment with python 3.10. and then using `pip install crispat`. Alternatively, the current version of crispat can also be installed by cloning this repository and then running `python setup.py install`.
 
 ## Getting started
-An example use case of crispat is shown for in the [`guide_assignment.ipynb`](tutorials/guide_assignment.ipynb) script. 
+An example use case of crispat is shown in the [`guide_assignment.ipynb`](tutorials/guide_assignment.ipynb) script. 
 
-Tutorials based on R using the SCEPTRE package on how to evaluate difference between methods for downstream analyses can be found in the [`tutorials/downstream_analyses`](tutorials/downstream_analyses) directory. 
+Tutorials on how to evaluate differences between methods for downstream analyses can be found in the [`tutorials/downstream_analyses`](tutorials/downstream_analyses) directory. 
 
 ## Documentation
 
