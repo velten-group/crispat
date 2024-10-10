@@ -326,16 +326,17 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
                                                                           output_dir + 'batch' + str(batch) + '/', 
                                                                           2024, n_iter, nonzero)
                 if len(perturbed_cells) != 0:
-                    # get UMI_counts of assigned cells
-                    UMI_counts = adata_crispr_batch[perturbed_cells, [gRNA]].X.toarray().reshape(-1)
-                    df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA, 'UMI_counts': UMI_counts})
-                    perturbations = pd.concat([perturbations, df], ignore_index = True)
+                    df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA})
                     thresholds = pd.concat([thresholds, pd.DataFrame({'gRNA': [gRNA], 'threshold': [threshold]})])
                     losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
                     estimates = pd.concat([estimates, map_estimates])
             elif inference == "em":
                 df = fit_em(gRNA, adata_crispr_batch, nonzero)
-                perturbations = pd.concat([perturbations, df], ignore_index = True)
+                
+            # get UMI_counts of assigned cells
+            UMI_counts = adata_crispr_batch[df['cell'], [gRNA]].X.toarray().reshape(-1)
+            df['UMI_counts'] = UMI_counts
+            perturbations = pd.concat([perturbations, df], ignore_index = True)
         
         # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
         perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
@@ -359,4 +360,4 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
        
     
 if __name__ == "__main__":
-    main()
+    pass

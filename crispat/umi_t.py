@@ -51,4 +51,4 @@ def ga_umi(input_file, thresholds, output_dir):
     
     
 if __name__ == "__main__":
-    main()
+    pass

@@ -351,4 +351,4 @@ def ga_poisson(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_l
 
 
 if __name__ == "__main__":
-    main()
+    pass

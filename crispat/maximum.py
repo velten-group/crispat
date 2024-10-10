@@ -56,4 +56,4 @@ def ga_max(input_file, output_dir, UMI_threshold = 0):
     
     
 if __name__ == "__main__":
-    main()
+    pass

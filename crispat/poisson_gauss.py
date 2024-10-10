@@ -342,4 +342,4 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
     
     
 if __name__ == "__main__":
-    main()
+    pass

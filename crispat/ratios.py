@@ -78,4 +78,4 @@ def ga_ratio(input_file, thresholds, output_dir, add_UMI_counts = True, UMI_thre
     
     
 if __name__ == "__main__":
-    main()
+    pass

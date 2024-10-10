@@ -352,4 +352,4 @@ def ga_negative_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = Non
     print('Done: outputs are saved in ' + output_dir)
 
 if __name__ == "__main__":
-    main()
+    pass

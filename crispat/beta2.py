@@ -297,4 +297,4 @@ def ga_2beta(input_file, output_dir, n_iter = 500, batch_list = None, add_UMI_co
     
     
 if __name__ == "__main__":
-    main()
+    pass

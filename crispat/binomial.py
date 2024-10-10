@@ -348,4 +348,4 @@ def ga_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_
 
 
 if __name__ == "__main__":
-    main()
+    pass
