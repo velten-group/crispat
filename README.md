@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/velten-group/crispat/blob/main/crispat_logo.png" alt="logo" width="200"/>
+    <img src="crispat_logo.png" alt="logo" width="200"/>
 </p>
 
 # crispat: CRISPR guide assignment tool
