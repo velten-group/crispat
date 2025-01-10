@@ -132,15 +132,15 @@ def fit_NegBinomial(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter, su
     # Data used to fit the model
     selected_gRNA = adata_crispr[:,[gRNA]]
 
-    # Only fit model for gRNAs with non-zero counts in at least 3 cells and with a maximum count of at least 2
+    # Only fit model for gRNAs with non-zero counts in at least 2 cells and with a maximum count of at least 2
     data = selected_gRNA.X.toarray() 
     data = torch.tensor(data[data != 0])
     if len(data) < 2:   
-        print(gRNA + " has only " + str(len(data)) + " cells with non-zero counts, so no model is fitted for that gRNA")
-        return(0, 0)
+        print(gRNA + " has only " + str(len(data)) + " cell(s) with non-zero counts, so no model is fitted for that gRNA")
+        return(0, pd.DataFrame())
     if max(data) < 2:
-        print("Max UMI count for " + gRNA + " is " + str(max(data).item()) + ", so no model is fitted for that gRNA")
-        return(0, 0)
+        print("Max UMI count for " + gRNA + " is smaller than 2, so no model is fitted for that gRNA")
+        return(0, pd.DataFrame())
 
     # Initialization of SVI
     n_batches = len(batch_list)
@@ -238,7 +238,10 @@ def parallel_assignment(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter
         gRNA, loss, MAP_estimates, perturbed_cells
     '''
     loss, map_estimates = fit_NegBinomial(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter, subsample_size)
-    perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+    if map_estimates.shape[0] != 0:
+        perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+    else:
+        perturbed_cells = pd.DataFrame()
     return gRNA, loss, map_estimates, perturbed_cells
 
 
@@ -333,11 +336,15 @@ def ga_negative_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = Non
             estimates = pd.concat([estimates, map_estimates])
 
             # get the perturbed cells
-            perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+            if map_estimates.shape[0] != 0:
+                perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+            else:
+                perturbed_cells = pd.DataFrame()
             perturbations = pd.concat([perturbations, perturbed_cells])
             
     # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
-    perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
+    if perturbations.shape[0] != 0:
+        perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
         
     # Save data frames with the results
     if gRNA_step == None:

@@ -37,9 +37,8 @@ def load_assignments(gc_dict, data_dir):
     Loads and combines assignment files of specified methods
     
     Args:
-        data_dir (str): directory containing the assignment output
-        start_gRNAs (list): list of gRNA start indices
-        end_gRNAs (list): list of gRNA end indices
+        gc_dict (dict): dictionary with method directory and threshold for each assignment
+        data_dir (str): directory containing all assignment output folders
         
     Returns:
         A pd DataFrame containing the gRNA-cell assignments of each method

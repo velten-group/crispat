@@ -339,7 +339,8 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
             perturbations = pd.concat([perturbations, df], ignore_index = True)
         
         # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
-        perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
+        if perturbations.shape[0] != 0:
+            perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
       
         # Save data frame with the perturbations assigned to each cell
         perturbations.to_csv(output_dir + 'batch' + str(batch) + '/assignments.csv', index = False)

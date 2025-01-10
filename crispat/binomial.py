@@ -42,8 +42,7 @@ def model(data, n_batches):
     with pyro.plate("cells", len(data)):
         # Local variables for each cell
         perturbation = pyro.sample("perturbation", dist.Bernoulli(pi)) 
-        mu = torch.exp(beta0 + beta1 * perturbation + gamma[batch - 1])
-        p = torch.sigmoid(mu)
+        p = torch.sigmoid(beta0 + beta1 * perturbation + gamma[batch - 1])
         pyro.sample("obs", dist.Binomial(seq_depth, p), obs=obs)
         
         
@@ -133,10 +132,10 @@ def fit_Binomial(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter, subsa
     data = torch.tensor(data[data != 0])
     if len(data) < 2:   
         print(gRNA + " has only " + str(len(data)) + " cells with non-zero counts, so no model is fitted for that gRNA")
-        return(0, 0)
+        return(0, pd.DataFrame())
     if max(data) < 2:
         print("Max UMI count for " + gRNA + " is " + str(max(data).item()) + ", so no model is fitted for that gRNA")
-        return(0, 0)
+        return(0, pd.DataFrame())
     
     # Initialization of SVI
     n_batches = len(batch_list)
@@ -232,12 +231,15 @@ def parallel_assignment(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter
         gRNA, loss, MAP_estimates, perturbed_cells
     '''
     loss, map_estimates = fit_Binomial(gRNA, adata_crispr, batch_list, output_dir, seed, n_iter, subsample_size)
-    perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+    if map_estimates.shape[0] != 0:
+        perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+    else:
+        perturbed_cells = pd.DataFrame()
     return gRNA, loss, map_estimates, perturbed_cells
 
 
 def ga_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_list = None, UMI_threshold = 0,
-                n_iter = 500, subsample_size = 15000, parallelize = True, n_processes = None, mem_limit = '10GB'):
+                n_iter = 3000, subsample_size = 15000, parallelize = True, n_processes = None, mem_limit = '10GB'):
     '''
     Guide assignment in which a binomial mixture model is fitted to the gRNA counts
     
@@ -328,11 +330,15 @@ def ga_binomial(input_file, output_dir, start_gRNA = 0, gRNA_step = None, batch_
             estimates = pd.concat([estimates, map_estimates])
 
             # get the perturbed cells
-            perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+            if map_estimates.shape[0] != 0:
+                perturbed_cells = get_perturbed_cells(adata_crispr, map_estimates, gRNA)
+            else:
+                perturbed_cells = pd.DataFrame()
             perturbations = pd.concat([perturbations, perturbed_cells])
             
     # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
-    perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
+    if perturbations.shape[0] != 0:
+        perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
         
     # Save data frames with the results
     if gRNA_step == None:

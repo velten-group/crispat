@@ -324,7 +324,8 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
             estimates = pd.concat([estimates, map_estimates])
     
     # Optional filtering to assigned cells that have at least 'UMI_threshold' counts
-    perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
+    if perturbations.shape[0] != 0:
+        perturbations = perturbations[perturbations['UMI_counts'] >= UMI_threshold]
     
     # Save data frames with the results
     if step == None:
