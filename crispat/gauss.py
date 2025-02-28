@@ -325,11 +325,13 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
                 perturbed_cells, threshold, loss, map_estimates = fit_GMM(gRNA, adata_crispr_batch, 
                                                                           output_dir + 'batch' + str(batch) + '/', 
                                                                           2024, n_iter, nonzero)
-                if len(perturbed_cells) != 0:
-                    df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA})
-                    thresholds = pd.concat([thresholds, pd.DataFrame({'gRNA': [gRNA], 'threshold': [threshold]})])
-                    losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
-                    estimates = pd.concat([estimates, map_estimates])
+                if len(perturbed_cells) == 0:
+                    continue
+
+                df = pd.DataFrame({'cell': perturbed_cells, 'gRNA': gRNA})
+                thresholds = pd.concat([thresholds, pd.DataFrame({'gRNA': [gRNA], 'threshold': [threshold]})])
+                losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
+                estimates = pd.concat([estimates, map_estimates])
             elif inference == "em":
                 df = fit_em(gRNA, adata_crispr_batch, nonzero)
                 
