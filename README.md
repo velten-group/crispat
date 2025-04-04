@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="crispat_logo.png" alt="logo" width="200"/>
+    <img src="https://github.com/velten-group/crispat/blob/main/crispat_logo.png" alt="logo" width="200"/>
 </p>
 
 # crispat: CRISPR guide assignment tool
@@ -26,7 +26,7 @@ In addition to the guide assignment functions, the package includes some additio
 For details on the downstream analysis and comparison on different guide assignments obtained by crispat take a look at our tutorial page on [downstream analyses](tutorials/downstream_analyses).
 
 ## Installation
-To install crispat, run `pip install crispat` (see [PyPI page](https://pypi.org/project/crispat/)). To avoid dependency conflicts, we recommend to first create a new conda environment with python 3.10. and then using `pip install crispat`. Alternatively, the current version of crispat can also be installed by cloning this repository and then running `python setup.py install`.
+To install crispat, run `pip install crispat` (see [PyPI page](https://pypi.org/project/crispat/)). To avoid dependency conflicts, we recommend to first create a new conda environment with python 3.10. (or higher) and then using `pip install crispat`. Alternatively, the current version of crispat can also be installed by cloning this repository and then running `pip install .` inside the crispat directory.
 
 ## Getting started
 An example use case of crispat is shown in the [`guide_assignment.ipynb`](tutorials/guide_assignment.ipynb) script. 
