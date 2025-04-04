@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="crispat",
-    version="0.9.9",
+    version="0.9.10",
     author="Jana M. Braunger",
     author_email="jana.braunger@cos.uni-heidelberg.de",
     description="crispat: CRISPR guide assignment tool",
@@ -21,8 +21,11 @@ setuptools.setup(
     python_requires=">=3.10",
     install_requires=[
         "anndata>=0.8.0",
+        "dask>=2023.6.0",
+        "distributed>=2023.6.0",
+        "ipywidgets>=8.1.5",
         "matplotlib>=3.7.1",
-        "numpy==1.24.3",
+        "numpy>=1.24.3",
         "pandas>=1.5.3",
         "pyro-ppl>=1.8.6",
         "scanpy>=1.9.3",
@@ -30,8 +33,6 @@ setuptools.setup(
         "seaborn>=0.12.2",
         "setuptools>=70.0.0",
         "torch>=2.2.0",
-        "tqdm>=4.66.3", 
-        "dask>=2023.6.0",
-        "distributed>=2023.6.0"
+        "tqdm>=4.66.3"
     ],
 )
