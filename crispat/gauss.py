@@ -155,7 +155,7 @@ def prob_normal_component(X, weights, locs, scales):
     return prob
 
 
-def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
+def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero, make_plots=True):
     '''
     Fits Gaussian mixture model for log2 of non-zero UMI counts of one gRNA using variational inference
     Args:
@@ -165,6 +165,7 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
         seed: (int) seed used for pyro
         n_iter (int, optional): number of steps for training the model
         nonzero (bool): if true fit the GMM on the nonzero values only
+        make_plots (bool): if False, skip writing per-gRNA loss and fitted-model PNGs (default True). Disable for batch / cluster runs to cut per-worker overhead.
     Returns:
         List of cells perturbed with the specified gRNA, as well as the inferred threshold
     '''
@@ -219,17 +220,19 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
                               'scale1': [scales],
                               'scale2': [scales]})
 
-    # create plot of the loss
-    plot_loss(losses, gRNA, output_dir)
-    
+    # create plot of the loss (skipped if make_plots is False)
+    if make_plots:
+        plot_loss(losses, gRNA, output_dir)
+
     # threshold for which probability is higher to belong to the higher normal component
     X = np.arange(1, int(selected_guide.max()) + 1, 1)
     log_X = np.log10(X + 1)
     df = pd.DataFrame({'t': X, 'prob_normal_component': prob_normal_component(log_X, weights, locs, scales)})
     threshold = df.loc[(df.prob_normal_component == True), 't'].min()
 
-    # create plot of the mixture distribution
-    plot_fitted_model(data, weights, locs, scales, np.log10(threshold+1), gRNA, output_dir)
+    # create plot of the mixture distribution (skipped if make_plots is False)
+    if make_plots:
+        plot_fitted_model(data, weights, locs, scales, np.log10(threshold+1), gRNA, output_dir)
     
     # get cells with gRNA counts above the threshold
     perturbed_cells = adata_crispr.obs_names[selected_guide.toarray().reshape(-1) >= threshold].tolist()
@@ -280,8 +283,8 @@ def _init_worker(adata):
     _WORKER_ADATA = adata
 
 
-def _fit_one_vi(gRNA, output_dir, seed, n_iter, nonzero):
-    return gRNA, fit_GMM(gRNA, _WORKER_ADATA, output_dir, seed, n_iter, nonzero)
+def _fit_one_vi(gRNA, output_dir, seed, n_iter, nonzero, make_plots):
+    return gRNA, fit_GMM(gRNA, _WORKER_ADATA, output_dir, seed, n_iter, nonzero, make_plots)
 
 
 def _fit_one_em(gRNA, nonzero):
@@ -289,7 +292,7 @@ def _fit_one_em(gRNA, nonzero):
 
 
 def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = None, UMI_threshold = 0,
-                  n_iter = 250, nonzero = False, inference = "vi", n_jobs = 1):
+                  n_iter = 250, nonzero = False, inference = "vi", n_jobs = 1, make_plots = True):
     '''
     Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts similar to the approach used in Cell Ranger. Two different inference methods are provided that can be selected with the 'inference' parameter.
 
@@ -304,6 +307,7 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
         nonzero (bool, optional): if True fit the mixture model on the nonzero values only, otherwise all values are used
         inference (str): choice of the inference method, either "vi" (default) for variational inference via pyro or "em" for using an EM algorithm
         n_jobs (int, optional): number of worker processes used to fit gRNAs in parallel. Default 1 (serial). For n_jobs > 1, the per-gRNA model fits are dispatched to a process pool; results are reassembled in input order so output is identical to the serial run.
+        make_plots (bool, optional): if False, skip writing per-gRNA loss and fitted-model PNGs (only relevant for inference='vi'). Default True to preserve existing behavior. Set to False for batch / cluster runs to reduce per-worker overhead.
 
     Returns:
         None
@@ -321,8 +325,9 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
         # If output_dir doesn't exist, the output folders are created
         if not os.path.exists(output_dir + 'batch' + str(batch) + '/'):
             os.makedirs(output_dir + 'batch' + str(batch) + '/')
-            os.makedirs(output_dir + 'batch' + str(batch) + "/fitted_model_plots/")
-            os.makedirs(output_dir + 'batch' + str(batch) + "/loss_plots/")
+            if make_plots:
+                os.makedirs(output_dir + 'batch' + str(batch) + "/fitted_model_plots/")
+                os.makedirs(output_dir + 'batch' + str(batch) + "/loss_plots/")
             #print("The output directory " + output_dir + 'batch' + str(batch) + '/' +  " was created")
 
         # Subset to selected batch
@@ -351,7 +356,7 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
                 if inference == "vi":
                     fits[gRNA] = fit_GMM(gRNA, adata_crispr_batch,
                                          output_dir + 'batch' + str(batch) + '/',
-                                         2024, n_iter, nonzero)
+                                         2024, n_iter, nonzero, make_plots)
                 elif inference == "em":
                     fits[gRNA] = fit_em(gRNA, adata_crispr_batch, nonzero)
         else:
@@ -361,7 +366,7 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
                 if inference == "vi":
                     futures = [ex.submit(_fit_one_vi, gRNA,
                                          output_dir + 'batch' + str(batch) + '/',
-                                         2024, n_iter, nonzero)
+                                         2024, n_iter, nonzero, make_plots)
                                for gRNA in gRNA_list]
                 elif inference == "em":
                     futures = [ex.submit(_fit_one_em, gRNA, nonzero)
