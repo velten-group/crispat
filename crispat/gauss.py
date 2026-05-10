@@ -222,7 +222,7 @@ def fit_GMM(gRNA, adata_crispr, output_dir, seed, n_iter, nonzero):
     plot_loss(losses, gRNA, output_dir)
     
     # threshold for which probability is higher to belong to the higher normal component
-    X = np.arange(1, max(selected_guide.toarray()) + 1, 1)
+    X = np.arange(1, int(selected_guide.max()) + 1, 1)
     log_X = np.log10(X + 1)
     df = pd.DataFrame({'t': X, 'prob_normal_component': prob_normal_component(log_X, weights, locs, scales)})
     threshold = df.loc[(df.prob_normal_component == True), 't'].min()
