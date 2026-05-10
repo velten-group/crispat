@@ -1,6 +1,7 @@
 import os
 import sys, getopt
 import json
+from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -268,11 +269,30 @@ def fit_em(gRNA, adata_crispr, nonzero):
     return perturbations
 
     
+# Worker globals + helpers for n_jobs > 1. The AnnData is pickled once per
+# worker process via ProcessPoolExecutor's initializer (not per task), so we
+# avoid the cost of round-tripping it for every gRNA.
+_WORKER_ADATA = None
+
+
+def _init_worker(adata):
+    global _WORKER_ADATA
+    _WORKER_ADATA = adata
+
+
+def _fit_one_vi(gRNA, output_dir, seed, n_iter, nonzero):
+    return gRNA, fit_GMM(gRNA, _WORKER_ADATA, output_dir, seed, n_iter, nonzero)
+
+
+def _fit_one_em(gRNA, nonzero):
+    return gRNA, fit_em(gRNA, _WORKER_ADATA, nonzero)
+
+
 def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = None, UMI_threshold = 0,
-                  n_iter = 250, nonzero = False, inference = "vi"):
+                  n_iter = 250, nonzero = False, inference = "vi", n_jobs = 1):
     '''
-    Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts similar to the approach used in Cell Ranger. Two different inference methods are provided that can be selected with the 'inference' parameter.  
-    
+    Guide assignment in which a Gaussian mixture model is fitted to the log-transformed UMI counts similar to the approach used in Cell Ranger. Two different inference methods are provided that can be selected with the 'inference' parameter.
+
     Args:
         input_file (str): path to the stored anndata object with the gRNA counts
         output_dir (str): directory in which to store the resulting assignment
@@ -283,10 +303,11 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
         n_iter (int, optional): number of steps for training the model
         nonzero (bool, optional): if True fit the mixture model on the nonzero values only, otherwise all values are used
         inference (str): choice of the inference method, either "vi" (default) for variational inference via pyro or "em" for using an EM algorithm
-    
+        n_jobs (int, optional): number of worker processes used to fit gRNAs in parallel. Default 1 (serial). For n_jobs > 1, the per-gRNA model fits are dispatched to a process pool; results are reassembled in input order so output is identical to the serial run.
+
     Returns:
         None
-    ''' 
+    '''
     print('Guide assignment using a Gaussian mixture model per batch')
     # Load gRNA counts data
     print('Load gRNA counts')
@@ -320,11 +341,38 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
         losses = pd.DataFrame({'gRNA': [], 'loss': []})
         estimates = pd.DataFrame()
 
+        # Compute per-gRNA fit results, either serially (n_jobs=1, original
+        # code path, byte-identical to upstream) or via a process pool.
+        # Either way we end up with a dict keyed by gRNA so we can iterate
+        # gRNA_list in order below for deterministic concat.
+        fits = {}
+        if n_jobs == 1:
+            for gRNA in gRNA_list:
+                if inference == "vi":
+                    fits[gRNA] = fit_GMM(gRNA, adata_crispr_batch,
+                                         output_dir + 'batch' + str(batch) + '/',
+                                         2024, n_iter, nonzero)
+                elif inference == "em":
+                    fits[gRNA] = fit_em(gRNA, adata_crispr_batch, nonzero)
+        else:
+            with ProcessPoolExecutor(max_workers=n_jobs,
+                                     initializer=_init_worker,
+                                     initargs=(adata_crispr_batch,)) as ex:
+                if inference == "vi":
+                    futures = [ex.submit(_fit_one_vi, gRNA,
+                                         output_dir + 'batch' + str(batch) + '/',
+                                         2024, n_iter, nonzero)
+                               for gRNA in gRNA_list]
+                elif inference == "em":
+                    futures = [ex.submit(_fit_one_em, gRNA, nonzero)
+                               for gRNA in gRNA_list]
+                for fut in futures:
+                    gRNA, payload = fut.result()
+                    fits[gRNA] = payload
+
         for gRNA in gRNA_list:
             if inference == "vi":
-                perturbed_cells, threshold, loss, map_estimates = fit_GMM(gRNA, adata_crispr_batch, 
-                                                                          output_dir + 'batch' + str(batch) + '/', 
-                                                                          2024, n_iter, nonzero)
+                perturbed_cells, threshold, loss, map_estimates = fits[gRNA]
                 if len(perturbed_cells) == 0:
                     continue
 
@@ -333,8 +381,8 @@ def ga_gauss(input_file, output_dir, start_gRNA = 0, step = None, batch_list = N
                 losses = pd.concat([losses, pd.DataFrame({'gRNA': [gRNA], 'loss': [loss]})])
                 estimates = pd.concat([estimates, map_estimates])
             elif inference == "em":
-                df = fit_em(gRNA, adata_crispr_batch, nonzero)
-                
+                df = fits[gRNA]
+
             # get UMI_counts of assigned cells
             UMI_counts = adata_crispr_batch[df['cell'], [gRNA]].X.toarray().reshape(-1)
             df['UMI_counts'] = UMI_counts
