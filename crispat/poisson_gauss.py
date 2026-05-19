@@ -252,7 +252,7 @@ def fit_PGMM(gRNA, adata_crispr, output_dir, seed, n_iter):
     plot_loss(losses, gRNA, output_dir)
     
     # threshold for which probability is higher to belong to the normal component
-    X = np.arange(1, max(selected_guide.toarray())+1, 1)
+    X = np.arange(1, int(selected_guide.max()) + 1, 1)
     log_X = np.log2(X)
     df = pd.DataFrame({'t': X, 'prob_normal_component': prob_normal_component(log_X, weights, mu, scale, lam)})
     threshold = df.loc[(df.prob_normal_component > 0.5), 't'].min()
