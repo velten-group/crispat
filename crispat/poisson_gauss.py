@@ -1,6 +1,7 @@
 import os
 import sys, getopt
 import json
+from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -184,17 +185,18 @@ def prob_normal_component(X, weights, mu, scale, lam):
     return prob
     
 
-def fit_PGMM(gRNA, adata_crispr, output_dir, seed, n_iter):
+def fit_PGMM(gRNA, adata_crispr, output_dir, seed, n_iter, make_plots=True):
     '''
-    Fits Poisson-Gaussian mixture model for log2 of non-zero UMI counts of one gRNA 
-    
+    Fits Poisson-Gaussian mixture model for log2 of non-zero UMI counts of one gRNA
+
     Args:
         gRNA (str): name of the gRNA
         adata_crispr (AnnData): anndata object with UMI counts of CRISPR Guide Capture
         output_dir (str): directory in which the resulting plots will be saved
         seed (int): seed used for pyro
         n_iter (int): number of steps for training the model
-        
+        make_plots (bool): if False, skip writing per-gRNA loss and fitted-model PNGs (default True). Disable for batch / cluster runs to cut per-worker overhead.
+
     Returns:
         List of cells perturbed with the specified gRNA, as well as the inferred threshold
     '''
@@ -248,27 +250,43 @@ def fit_PGMM(gRNA, adata_crispr, output_dir, seed, n_iter):
                               'mu': [mu], 
                               'scale': [scale]})
 
-    # create plot of the loss
-    plot_loss(losses, gRNA, output_dir)
-    
+    # create plot of the loss (skipped if make_plots is False)
+    if make_plots:
+        plot_loss(losses, gRNA, output_dir)
+
     # threshold for which probability is higher to belong to the normal component
     X = np.arange(1, int(selected_guide.max()) + 1, 1)
     log_X = np.log2(X)
     df = pd.DataFrame({'t': X, 'prob_normal_component': prob_normal_component(log_X, weights, mu, scale, lam)})
     threshold = df.loc[(df.prob_normal_component > 0.5), 't'].min()
-    
-    # create plot of the mixture distribution
-    plot_fitted_model(data, weights, mu, scale, lam, np.log2(threshold), gRNA, output_dir)
+
+    # create plot of the mixture distribution (skipped if make_plots is False)
+    if make_plots:
+        plot_fitted_model(data, weights, mu, scale, lam, np.log2(threshold), gRNA, output_dir)
     
     # get cells with gRNA counts above the threshold
     perturbed_cells = adata_crispr.obs_names[selected_guide.toarray().reshape(-1) >= threshold].tolist()
     return(perturbed_cells, threshold, losses[-1], estimates)
 
 
-def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter = 500, n_counts = None, UMI_threshold = 0):
+# Worker globals + helpers for n_jobs > 1. AnnData is pickled once per
+# worker process via ProcessPoolExecutor's initializer, not per task.
+_WORKER_ADATA = None
+
+
+def _init_worker(adata):
+    global _WORKER_ADATA
+    _WORKER_ADATA = adata
+
+
+def _fit_one(gRNA, output_dir, seed, n_iter, make_plots):
+    return gRNA, fit_PGMM(gRNA, _WORKER_ADATA, output_dir, seed, n_iter, make_plots)
+
+
+def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter = 500, n_counts = None, UMI_threshold = 0, n_jobs = 1, make_plots = True):
     '''
     Guide assignment in which a Poisson-Gaussian mixture model is fitted to the non-zero log-transformed UMI counts
-    
+
     Args:
         input_file (str): path to the stored anndata object with the gRNA counts
         output_dir (str): directory in which to store the resulting assignment
@@ -277,17 +295,20 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
         n_iter (int, optional): number of steps for training the model
         n_counts (int, optional): subsample the gRNA counts per cell to a total of n_counts. If None (default), the UMI count matrix is used without any downsampling.
         UMI_threshold (int, optional): Additional UMI threshold for assigned cells which is applied after creating the initial assignment to remove cells with fewer UMI counts than this threshold (default: no additional UMI threshold)
-        
+        n_jobs (int, optional): number of worker processes used to fit gRNAs in parallel. Default 1 (serial). For n_jobs > 1, per-gRNA fits are dispatched to a process pool; results are reassembled in input order so output is identical to the serial run.
+        make_plots (bool, optional): if False, skip writing per-gRNA loss and fitted-model PNGs. Default True to preserve existing behavior. Set to False for batch / cluster runs to reduce per-worker overhead.
+
     Returns:
         None
-    '''   
+    '''
     print('Guide assignment with Poisson-Gaussian mixture model as in Replogle et al.')
     # If output_dir doesn't exist, the output folders are created
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-        os.makedirs(output_dir + "fitted_model_plots/")
-        os.makedirs(output_dir + "loss_plots/")
-        print("The output directory " + output_dir +  " was created") 
+        if make_plots:
+            os.makedirs(output_dir + "fitted_model_plots/")
+            os.makedirs(output_dir + "loss_plots/")
+        print("The output directory " + output_dir +  " was created")
 
     # Load gRNA counts data
     print('Load gRNA counts')
@@ -311,9 +332,27 @@ def ga_poisson_gauss(input_file, output_dir, start_gRNA = 0, step = None, n_iter
     estimates = pd.DataFrame()
     
     print('Fit Poisson-Gaussian Mixture Model for each gRNA: ')
-    for gRNA in tqdm(gRNA_list):
-        time.sleep(0.01)
-        perturbed_cells, threshold, loss, map_estimates = fit_PGMM(gRNA, adata_crispr, output_dir, 2024, n_iter)
+    # Compute per-gRNA fit results, either serially (n_jobs=1, original code
+    # path, byte-identical to upstream) or via a process pool. We collect into
+    # a dict and iterate gRNA_list in order below so concat order is
+    # deterministic regardless of n_jobs.
+    fits = {}
+    if n_jobs == 1:
+        for gRNA in tqdm(gRNA_list):
+            time.sleep(0.01)
+            fits[gRNA] = fit_PGMM(gRNA, adata_crispr, output_dir, 2024, n_iter, make_plots)
+    else:
+        with ProcessPoolExecutor(max_workers=n_jobs,
+                                 initializer=_init_worker,
+                                 initargs=(adata_crispr,)) as ex:
+            futures = [ex.submit(_fit_one, gRNA, output_dir, 2024, n_iter, make_plots)
+                       for gRNA in gRNA_list]
+            for fut in tqdm(futures):
+                gRNA, payload = fut.result()
+                fits[gRNA] = payload
+
+    for gRNA in gRNA_list:
+        perturbed_cells, threshold, loss, map_estimates = fits[gRNA]
         if len(perturbed_cells) != 0:
             # get UMI_counts of assigned cells
             UMI_counts = adata_crispr[perturbed_cells, [gRNA]].X.toarray().reshape(-1)
